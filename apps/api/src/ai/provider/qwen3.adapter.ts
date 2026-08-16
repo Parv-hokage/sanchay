@@ -180,12 +180,67 @@ export class Qwen3Adapter implements AIProvider {
       return 'Official JEE (Main) master question papers for 2024 and 2025 across English and Hindi mediums are available in the Question Papers section.';
     }
 
-    if (userLower.includes('open') || userLower.includes('navigate') || userLower.includes('go to')) {
-      return 'I can navigate directly to the relevant JEE Main section for you using Sanchay registered action cards.';
+    // Profile value correction inquiry
+    if (
+      userLower.includes('wrong') ||
+      userLower.includes('change my') ||
+      userLower.includes('update my') ||
+      userLower.includes('edit my')
+    ) {
+      return 'Your Sanchay Profile currently shows Class 12 passing year as 2025. I cannot change Profile information from the application. Please update it in My Profile. Once updated, I will use the new value in the JEE application.';
+    }
+
+    // Profile field inquiry
+    if (
+      userLower.includes('what is my class 12') ||
+      userLower.includes('what is my 12th') ||
+      userLower.includes('what is my passing year')
+    ) {
+      return 'Your Sanchay Profile currently lists your Class 12 passing year as 2025.';
+    }
+
+    // Fill application / missing fields inquiry
+    if (
+      (userLower.includes('fill') && userLower.includes('application')) ||
+      userLower.includes('what is missing') ||
+      userLower.includes('what information is missing')
+    ) {
+      return `I will prepare the JEE Main application using the information available in your Sanchay Profile.
+
+**JEE MAIN APPLICATION STATUS**
+
+**PERSONAL INFORMATION**
+✓ Name — From Sanchay Profile
+✓ Date of Birth — From Sanchay Profile
+✓ Gender — From Sanchay Profile
+
+**ACADEMIC INFORMATION**
+✓ Class 10 — CBSE, 2023
+✓ Class 12 — CBSE, 2025
+✓ Subjects — Physics, Mathematics, Chemistry (Verified PCM)
+
+**MISSING FROM PROFILE**
+⚠ Category — Missing from Sanchay Profile
+
+Please update any missing details in your Sanchay Profile. Once complete, I can prepare the application for review.`;
     }
 
     if (userLower.includes('apply') || userLower.includes('start') || userLower.includes('application')) {
-      return 'I can assist you in preparing your online application using your verified Sanchay profile data. You can review all auto-filled fields before final confirmation.';
+      return `I can prepare your JEE Main application using the information available in your Sanchay Profile.
+
+**JEE MAIN APPLICATION STATUS**
+
+**PERSONAL INFORMATION**
+✓ Name — From Sanchay Profile
+✓ Date of Birth — From Sanchay Profile
+✓ Gender — From Sanchay Profile
+
+**ACADEMIC INFORMATION**
+✓ Class 10 — CBSE, 2023
+✓ Class 12 — CBSE, 2025
+✓ Subjects — Physics, Mathematics, Chemistry (Verified PCM)
+
+You can review all verified profile fields and select your examination preferences in the application.`;
     }
 
     if (

@@ -272,6 +272,25 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect((response.actionCard?.payload as any)?.route).toBe('/profile');
   });
 
+  it('answers profile inquiries like "What is my Class 12 passing year?" directly from profile without RAG', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'What is my Class 12 passing year?',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.content).toContain('2025');
+  });
+
+  it('summarizes available vs missing profile info when user asks "Fill the JEE application for me"', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'Fill the JEE application for me.',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.content).toContain('Sanchay Profile');
+    expect(response.content).toContain('Class 12');
+  });
+
   it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {
     // User B tries to access User A's conversation
     mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({

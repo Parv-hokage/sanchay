@@ -1665,3 +1665,36 @@ That comparison is a central Phase 7 demonstration.
 
 > **Do not replace the JEE service with a generic chatbot. Recreate the important service experience first, make it usable traditionally, then make Sanchay AI understand that service and help the citizen use it.**
 
+---
+
+# 52. ARCHITECTURAL PRINCIPLE: CITIZEN PROFILE IS THE SINGLE SOURCE OF TRUTH (ADR-024)
+
+> **CITIZEN PROFILE IS THE SINGLE SOURCE OF TRUTH.**  
+> Government applications consume authorized Profile data. Applications do not maintain a second editable copy of citizen identity/personal/academic information.  
+> AI is read-only with respect to Profile data and cannot directly mutate Profile or Profile-derived application fields.
+
+### Data Flow
+```text
+SANCHAY PROFILE (/profile)
+         ↓
+PROFILE VALIDATION
+         ↓
+APPLICATION FIELD MAPPING
+         ↓
+READ-ONLY APPLICATION VIEW (/services/jee-main/apply)
+         ↓
+USER REVIEW (Read-Only)
+         ↓
+USER CONFIRMATION (Statutory Declaration)
+         ↓
+SANDBOX SUBMISSION (SANDBOX-JEE-2026-XXXXXX)
+```
+
+### Core Tenets:
+1. **Why Profile is the Source of Truth:** Prevents data fragmentation, desynchronization, and duplicate conflicting records across multiple government service applications.
+2. **Read-Only Application Fields:** Personal identity, DOB, gender, category, contact, and academic qualifications are rendered strictly read-only in the application wizard with explicit provenance tags (`✓ From Sanchay Profile`, `⚠ Missing from Sanchay Profile`).
+3. **Profile Correction Flow:** When data is incorrect or missing, users are guided to **My Profile** (`/profile`). Updating the profile immediately propagates the updated data across all active service applications without manual re-entry.
+4. **Zero AI Profile Mutation:** Sanchay AI has read-only access to authorized profile credentials. AI cannot edit or claim to modify profile fields, and redirects all modification queries to My Profile with actionable navigation cards (`[Open My Profile]`).
+5. **No Sensitive Data in Chat:** AI never requests Aadhaar numbers, full identity numbers, OTPs, or authentication secrets in conversational messages.
+
+
