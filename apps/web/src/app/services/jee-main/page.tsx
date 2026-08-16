@@ -255,56 +255,84 @@ export default function JeeMainServicePortal() {
 
 
       {/* Breadcrumb Hierarchy */}
-      <nav className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-        <Link href="/" className="hover:text-sanchay-navy-800 text-slate-700">Home</Link>
+      <nav className="flex items-center gap-2 text-xs text-slate-700 font-semibold">
+        <Link href="/" className="hover:text-slate-950 text-slate-700">Home</Link>
         <span>/</span>
-        <Link href="/departments" className="hover:text-sanchay-navy-800 text-slate-700">Education</Link>
+        <Link href="/departments" className="hover:text-slate-950 text-slate-700">Education</Link>
         <span>/</span>
-        <span className="text-slate-700 font-medium">National Testing Agency (NTA)</span>
+        <span className="text-slate-800 font-bold">National Testing Agency (NTA)</span>
         <span>/</span>
-        <span className="font-bold text-sanchay-navy-950">JEE (Main) 2026</span>
+        <span className="font-extrabold text-slate-950">JEE (Main) 2026</span>
       </nav>
 
       {/* Hero Portal Header - High Contrast WCAG AAA Compliant */}
-      <div className="bg-linear-to-br from-[#0B1528] via-[#0F1E36] to-[#162D50] text-white rounded-3xl p-6 sm:p-9 shadow-2xl border border-slate-700/60 relative overflow-hidden">
+      <div
+        className="bg-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-9 shadow-2xl border border-slate-700 relative overflow-hidden"
+        style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+      >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-2.5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-950 bg-amber-400 px-3 py-1 rounded-md shadow-xs">
-                National Testing Agency (NTA)
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span
+                className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md shadow-xs"
+                style={{ backgroundColor: '#fbbf24', color: '#020617' }}
+              >
+                NATIONAL TESTING AGENCY (NTA)
               </span>
-              <span className="text-xs text-slate-200 font-semibold">
-                Official Portal: <code className="font-mono text-amber-300 font-bold bg-white/10 px-2 py-0.5 rounded">jeemain.nta.nic.in</code>
+              <span className="text-xs font-semibold text-slate-200" style={{ color: '#e2e8f0' }}>
+                Official Portal:{' '}
+                <code
+                  className="font-mono px-2 py-0.5 rounded font-bold"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#fde68a' }}
+                >
+                  jeemain.nta.nic.in
+                </code>
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3.5xl font-black tracking-tight text-white drop-shadow-sm">
+            <h1
+              className="text-2xl sm:text-3.5xl font-black tracking-tight text-white"
+              style={{ color: '#ffffff' }}
+            >
               Joint Entrance Examination (Main) 2026
             </h1>
-            <p className="text-xs sm:text-sm text-slate-100 max-w-2xl leading-relaxed font-normal">
+            <p
+              className="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed font-medium"
+              style={{ color: '#e2e8f0' }}
+            >
               Official gateway for admission to Undergraduate Engineering Programs (B.E./B.Tech.) at NITs, IIITs, CFTIs, and eligibility test for JEE (Advanced).
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0 relative z-20">
             <Link
               href="/services/jee-main/apply"
-              className="px-6 py-3 bg-amber-400 hover:bg-amber-300 active:scale-98 text-slate-950 font-black rounded-xl text-sm transition-all shadow-xl hover:shadow-2xl text-center flex items-center justify-center gap-2 cursor-pointer"
+              id="hero-apply-button"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm transition-all shadow-xl hover:shadow-2xl active:scale-98 cursor-pointer text-center"
+              style={{ backgroundColor: '#f59e0b', color: '#020617' }}
             >
               <span>Apply for JEE (Main) 2026</span>
-              <span className="text-base">→</span>
+              <span className="text-base font-bold">→</span>
             </Link>
           </div>
         </div>
 
         {/* Source Authenticity Banner */}
-        <div className="mt-6 pt-4 border-t border-slate-700/70 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-200">
-          <div className="flex items-center gap-2.5 bg-emerald-950/70 border border-emerald-500/40 px-3 py-1.5 rounded-full">
+        <div
+          className="mt-6 pt-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs"
+          style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
+        >
+          <div
+            className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border"
+            style={{ backgroundColor: 'rgba(6, 78, 59, 0.8)', borderColor: 'rgba(52, 211, 153, 0.5)' }}
+          >
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-xs" />
-            <span className="text-emerald-200 font-semibold">Service Status: <strong className="text-white font-black">Session 1 Scorecards Published & Session 2 Active</strong></span>
+            <span className="text-emerald-200 font-semibold">
+              ● Service Status: <strong className="text-white font-black">Session 1 Scorecards Published &amp; Session 2 Active</strong>
+            </span>
           </div>
-          <span className="text-slate-300 font-medium">
-            Source: National Testing Agency / Official Information Bulletins & Circulars
+          <span className="font-medium text-slate-300" style={{ color: '#cbd5e1' }}>
+            Source: National Testing Agency / Official Information Bulletins &amp; Circulars
           </span>
         </div>
       </div>

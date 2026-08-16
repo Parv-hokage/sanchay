@@ -184,7 +184,10 @@ export default function JeeMainApplyPage() {
       </nav>
 
       {/* Sandbox Identification Banner */}
-      <div className="bg-linear-to-r from-[#0B1528] via-[#0F1E36] to-[#162D50] text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-700/60 relative overflow-hidden">
+      <div
+        className="bg-slate-900 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-700 relative overflow-hidden"
+        style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+      >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
