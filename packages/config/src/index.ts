@@ -1,7 +1,23 @@
 import { z } from 'zod';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
 
-dotenv.config();
+// Search upward from CWD to find the monorepo root .env
+function findEnvFile(startDir: string): string | undefined {
+  let dir = startDir;
+  for (let i = 0; i < 5; i++) {
+    const candidate = path.join(dir, '.env');
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return undefined;
+}
+
+const envPath = findEnvFile(process.cwd());
+dotenv.config({ path: envPath });
 
 export const EnvConfigSchema = z.object({
   // Node Environment
@@ -34,9 +50,10 @@ export const EnvConfigSchema = z.object({
   OBJECT_STORAGE_USE_SSL: z.coerce.boolean().default(false),
 
   // AI & Embeddings
-  AI_PROVIDER: z.enum(['mock', 'gemini', 'openai', 'custom']).default('mock'),
+  AI_PROVIDER: z.enum(['mock', 'openrouter', 'together', 'gemini', 'openai', 'custom']).default('mock'),
   AI_API_KEY: z.string().optional().default(''),
-  AI_MODEL_NAME: z.string().default('gemini-1.5-flash'),
+  AI_BASE_URL: z.string().optional().default(''),
+  AI_MODEL: z.string().optional().default(''),
 
   EMBEDDING_PROVIDER: z.enum(['mock', 'gemini', 'openai', 'custom']).default('mock'),
   EMBEDDING_API_KEY: z.string().optional().default(''),

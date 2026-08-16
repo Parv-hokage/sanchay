@@ -12,24 +12,28 @@ export class Qwen3Adapter implements AIProvider {
 
   async generateText(messages: ChatMessagePayload[], options?: AIProviderOptions): Promise<string> {
     if (!this.apiKey) {
-      this.logger.debug('[Qwen3] API Key not configured. Using deterministic reasoning engine.');
+      this.logger.debug('[AI] No API key configured. Using deterministic fallback.');
       return this.localFallbackReasoning(messages);
     }
 
+    this.logger.log(`[AI] provider=${this.providerName} model=${this.defaultModel} real_generation=true`);
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.apiKey}`,
+          'HTTP-Referer': 'https://sanchay.gov.in',
+          'X-Title': 'Sanchay AI',
         },
         body: JSON.stringify({
           model: this.defaultModel,
           messages,
-          temperature: options?.temperature ?? 0.2,
+          temperature: options?.temperature ?? 0.3,
           max_tokens: options?.maxTokens ?? 1024,
         }),
         signal: controller.signal,
@@ -38,13 +42,23 @@ export class Qwen3Adapter implements AIProvider {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Qwen3 Provider HTTP Error ${response.status}: ${await response.text()}`);
+        const errorBody = await response.text();
+        this.logger.warn(`[AI] Provider HTTP ${response.status}: ${errorBody.substring(0, 200)}`);
+        throw new Error(`Provider HTTP Error ${response.status}`);
       }
 
       const data = await response.json();
-      return data.choices?.[0]?.message?.content || this.localFallbackReasoning(messages);
+      const content = data.choices?.[0]?.message?.content;
+
+      if (content && content.trim().length > 0) {
+        this.logger.log(`[AI] Real generation complete. Response length: ${content.length} chars`);
+        return content;
+      }
+
+      this.logger.warn('[AI] Empty model response. Falling back to deterministic engine.');
+      return this.localFallbackReasoning(messages);
     } catch (err: any) {
-      this.logger.warn(`[Qwen3] API call failed: ${err.message}. Falling back to deterministic reasoning.`);
+      this.logger.warn(`[AI] API call failed: ${err.message}. Falling back to deterministic engine.`);
       return this.localFallbackReasoning(messages);
     }
   }
