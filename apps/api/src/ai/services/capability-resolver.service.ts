@@ -22,7 +22,11 @@ export class CapabilityResolverService {
       extractedParams?.section === 'profile' ||
       extractedParams?.route === '/profile';
 
-    if (intent === IntentType.START_APPLICATION || intent === IntentType.FILL_APPLICATION) {
+    if (
+      intent === IntentType.APPLICATION_ACTION ||
+      intent === IntentType.START_APPLICATION ||
+      intent === IntentType.FILL_APPLICATION
+    ) {
       if (activeService === 'jee-main') {
         const isFilling = intent === IntentType.FILL_APPLICATION;
         return {
@@ -35,8 +39,8 @@ export class CapabilityResolverService {
             title: isFilling ? 'Review Proposed Application Values' : 'Start JEE (Main) 2026 Application',
             description: isFilling
               ? 'Class 12 Year: 2025 | Subjects: Physics, Chemistry, Mathematics'
-              : '18 fields can be pre-filled from your verified profile. 4 fields need your input.',
-            actionType: isFilling ? 'FILL_APPLICATION' : 'START_APPLICATION',
+              : 'Review pre-filled application details from your Sanchay Profile before submission.',
+            actionType: 'START_APPLICATION',
             payload: {
               serviceSlug: 'jee-main',
               capabilitySlug: 'apply-jee-main-2026',

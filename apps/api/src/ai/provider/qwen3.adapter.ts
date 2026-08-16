@@ -215,48 +215,90 @@ export class Qwen3Adapter implements AIProvider {
       return 'Your Sanchay Profile currently lists your Class 12 passing year as 2025.';
     }
 
-    // Fill application / missing fields inquiry
-    if (
-      (userLower.includes('fill') && userLower.includes('application')) ||
-      userLower.includes('what is missing') ||
-      userLower.includes('what information is missing')
-    ) {
-      return `I will prepare the JEE Main application using the information available in your Sanchay Profile.
+    const systemPrompt = messages.find((m) => m.role === 'system')?.content || '';
+    const activeServiceMatch = systemPrompt.match(/Active Service:\s*([a-zA-Z0-9_-]+)/i);
+    const activeService = activeServiceMatch ? activeServiceMatch[1].toLowerCase() : undefined;
 
-**JEE MAIN APPLICATION STATUS**
+    const userAndHistoryText = messages
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => m.content)
+      .join(' ')
+      .toLowerCase();
 
-**PERSONAL INFORMATION**
-✓ Name — From Sanchay Profile
-✓ Date of Birth — From Sanchay Profile
-✓ Gender — From Sanchay Profile
+    // Application Action / Apply / Fill application
+    const isAppAction =
+      userLower === 'apply' ||
+      userLower === 'apply for me' ||
+      userLower === 'apply for it' ||
+      userLower === 'apply now' ||
+      userLower === 'start application' ||
+      userLower === 'start my application' ||
+      userLower === 'fill the application' ||
+      userLower === 'fill it for me' ||
+      userLower === 'fill my form' ||
+      userLower === 'fill form' ||
+      userLower === 'fill application' ||
+      userLower === 'complete my application' ||
+      userLower === 'help me apply' ||
+      userLower === 'submit my application' ||
+      userLower === 'proceed with application' ||
+      userLower === 'continue application' ||
+      userLower.includes('apply for me') ||
+      userLower.includes('apply for it') ||
+      userLower.includes('start my application') ||
+      userLower.includes('start application') ||
+      userLower.includes('fill the application') ||
+      userLower.includes('fill it for me') ||
+      userLower.includes('fill my form') ||
+      userLower.includes('fill application') ||
+      userLower.includes('complete my application') ||
+      userLower.includes('help me apply') ||
+      userLower.includes('submit my application') ||
+      userLower.includes('proceed with application') ||
+      userLower.includes('continue application') ||
+      userLower.includes('apply for') ||
+      userLower.includes('register for') ||
+      userLower.includes('want to apply') ||
+      userLower.includes('want to start') ||
+      (userLower.includes('apply') && (userLower.includes('application') || userLower.includes('form') || userLower.includes('jee') || userLower.includes('me'))) ||
+      (userLower.includes('fill') && (userLower.includes('application') || userLower.includes('form') || userLower.includes('it') || userLower.includes('me') || userLower.includes('jee')));
 
-**ACADEMIC INFORMATION**
-✓ Class 10 — CBSE, 2023
-✓ Class 12 — CBSE, 2025
-✓ Subjects — Physics, Mathematics, Chemistry (Verified PCM)
+    if (isAppAction) {
+      const hasJeeContext =
+        activeService === 'jee-main' ||
+        userLower.includes('jee') ||
+        userLower.includes('engineering') ||
+        userAndHistoryText.includes('jee') ||
+        userAndHistoryText.includes('engineering');
 
-**MISSING FROM PROFILE**
-⚠ Category — Missing from Sanchay Profile
+      if (hasJeeContext) {
+        return `Yes. I can prepare your JEE Main application using the information already verified in your Sanchay Profile.
 
-Please update any missing details in your Sanchay Profile. Once complete, I can prepare the application for review.`;
-    }
+I'll first check:
+• your profile information
+• academic qualifications
+• category
+• required documents
+• missing application fields
 
-    if (userLower.includes('apply') || userLower.includes('start') || userLower.includes('application')) {
-      return `I can prepare your JEE Main application using the information available in your Sanchay Profile.
+I will not modify your profile or invent any information.
 
-**JEE MAIN APPLICATION STATUS**
+Any missing information must be added to your Sanchay Profile first.`;
+      }
 
-**PERSONAL INFORMATION**
-✓ Name — From Sanchay Profile
-✓ Date of Birth — From Sanchay Profile
-✓ Gender — From Sanchay Profile
+      const hasAyushmanContext =
+        activeService === 'ayushman-bharat' ||
+        userLower.includes('ayushman') ||
+        userLower.includes('pmjay') ||
+        userAndHistoryText.includes('ayushman') ||
+        userAndHistoryText.includes('pmjay');
 
-**ACADEMIC INFORMATION**
-✓ Class 10 — CBSE, 2023
-✓ Class 12 — CBSE, 2025
-✓ Subjects — Physics, Mathematics, Chemistry (Verified PCM)
+      if (hasAyushmanContext) {
+        return `Yes. I can initiate your Ayushman Bharat (PM-JAY) e-KYC application using the verified credentials in your Sanchay Profile.`;
+      }
 
-You can review all verified profile fields and select your examination preferences in the application.`;
+      // No service context available
+      return `To assist you better, could you please specify which service or application you want to apply for (e.g., JEE (Main) 2026 or Ayushman Bharat PM-JAY)?`;
     }
 
     if (

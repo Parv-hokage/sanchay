@@ -305,3 +305,37 @@ All meaningful product, architecture, security, API, and implementation changes 
 
 - **Automated Test Suite**: 79/79 passing tests across monorepo test suites.
 
+---
+
+## [0.8.2] — 2026-08-17 — Fix Sanchay AI: Contextual Application Action Resolution & Service Inheritance
+
+### Added
+
+- **Contextual `APPLICATION_ACTION` Intent & Service Inheritance**:
+  - Added `IntentType.APPLICATION_ACTION` to `@sanchay/types`.
+  - Recognized application action phrases: `apply for me`, `apply for it`, `apply`, `start application`, `start my application`, `fill the application`, `fill it for me`, `fill my form`, `complete my application`, `help me apply`, `submit my application`, `proceed with application`, `continue application`.
+  - **Deterministic Service Resolution Order**:
+    1. Explicit service in current message (e.g. "apply for jee").
+    2. Active route / service context (`context.serviceId`, `context.route`).
+    3. Active application context.
+    4. Most recent service mentioned in conversation history (reverse scan).
+    5. Fallback prompt asking user to specify the service only when zero context exists.
+- **Profile-Aware Application Action Guidance**:
+  - Grounded application start response in Sanchay Profile without generic 9-step text articles:
+    `"Yes. I can prepare your JEE Main application using the information already verified in your Sanchay Profile. I'll first check: • your profile information • academic qualifications • category • required documents • missing application fields. I will not modify your profile or invent any information. Any missing information must be added to your Sanchay Profile first."`
+  - Attached actionable Action Card `[Start JEE (Main) 2026 Application]` / `[Review Application]` navigating directly to `/services/jee-main/apply`.
+- **Zero AI Profile Mutation & Sanchay Profile Single Source of Truth**:
+  - Maintained strict read-only profile access for AI. Category/academic corrections direct users to My Profile (`/profile`).
+
+### Fixed
+
+- **Production Sign-In API & Serverless Route Handlers**:
+  - Implemented native Next.js App Router API route handlers in `apps/web/src/app/api/v1/` (`health`, `auth/login`, `auth/verify`, `auth/session`, `auth/logout`, `me/profile`, `ai/chat`), eliminating HTML 500 rewrite errors and ensuring instant JSON responses.
+  - Added defensive response parsing in `api-client.ts` to inspect `Content-Type` before parsing JSON.
+
+### Tested
+
+- **Unit & Integration Test Suite**: 85/85 tests passed across 16 test files (including 6 dedicated conversation context inheritance tests in `ai.jee.spec.ts`).
+- **Production Endpoints**: Verified live `health`, `auth/login`, `auth/verify`, and error handling on `https://sanchay-three.vercel.app`.
+
+

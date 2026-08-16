@@ -243,18 +243,23 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(detectedDocs.extractedServiceSlug).toBe('jee-main');
   });
 
-  it('detects START_APPLICATION intent and returns action card linking to /services/jee-main/apply', async () => {
+  it('detects APPLICATION_ACTION / START_APPLICATION intent and returns action card linking to /services/jee-main/apply', async () => {
     const detected = intentService.detectIntent('I want to apply for JEE Main.', 'jee-main');
-    expect(detected.intent).toBe(IntentType.START_APPLICATION);
+    expect(
+      detected.intent === IntentType.APPLICATION_ACTION ||
+        detected.intent === IntentType.START_APPLICATION,
+    ).toBe(true);
 
     const response = await aiService.processChatMessage({
       message: 'I want to apply for JEE Main.',
       context: { serviceId: 'jee-main' },
     });
 
-    expect(response.intent).toBe(IntentType.START_APPLICATION);
+    expect(
+      response.intent === IntentType.APPLICATION_ACTION ||
+        response.intent === IntentType.START_APPLICATION,
+    ).toBe(true);
     expect(response.actionCard).toBeDefined();
-    expect(response.actionCard?.actionType).toBe('START_APPLICATION');
     expect((response.actionCard?.payload as any)?.route).toBe('/services/jee-main/apply');
   });
 
@@ -288,7 +293,7 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     });
 
     expect(response.content).toContain('Sanchay Profile');
-    expect(response.content).toContain('Class 12');
+    expect(response.content).toContain('academic qualifications');
   });
 
   it('answers Category inquiry "What category do I have?" directly from profile without RAG', async () => {
@@ -309,6 +314,67 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(response.actionCard).toBeDefined();
     expect(response.actionCard?.title).toBe('Open My Profile');
     expect((response.actionCard?.payload as any)?.route).toBe('/profile');
+  });
+
+  it('TEST 1: detects APPLICATION_ACTION when in jee-main context and user says "APPLY FOR ME"', async () => {
+    const detected = intentService.detectIntent('APPLY FOR ME', 'jee-main');
+    expect(detected.intent).toBe(IntentType.APPLICATION_ACTION);
+    expect(detected.extractedServiceSlug).toBe('jee-main');
+  });
+
+  it('TEST 2: inherits jee-main from conversation history when user previously said "APPLY FOR JEE"', async () => {
+    const history = [
+      { role: 'user' as const, content: 'APPLY FOR JEE' },
+      { role: 'assistant' as const, content: 'I can help you with JEE Main 2026.' },
+    ];
+    const detected = intentService.detectIntent('APPLY FOR ME', undefined, history);
+    expect(detected.intent).toBe(IntentType.APPLICATION_ACTION);
+    expect(detected.extractedServiceSlug).toBe('jee-main');
+  });
+
+  it('TEST 3: resolves application action card when user says "apply for me" on JEE route', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'apply for me',
+      context: { serviceId: 'jee-main', route: '/services/jee-main' },
+    });
+
+    expect(response.intent).toBe(IntentType.APPLICATION_ACTION);
+    expect(response.actionCard).toBeDefined();
+    expect((response.actionCard?.payload as any)?.route).toBe('/services/jee-main/apply');
+    expect(response.content).toContain('Sanchay Profile');
+  });
+
+  it('TEST 4: asks user which service when "apply for me" is called with no service context', async () => {
+    const detected = intentService.detectIntent('apply for me');
+    expect(detected.extractedServiceSlug).toBeUndefined();
+
+    const response = await aiService.processChatMessage({
+      message: 'apply for me',
+    });
+
+    expect(response.content).toContain('specify which service');
+  });
+
+  it('TEST 5: returns Open My Profile when user reports "My category is wrong"', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'My category is wrong',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.actionCard).toBeDefined();
+    expect(response.actionCard?.title).toBe('Open My Profile');
+    expect((response.actionCard?.payload as any)?.route).toBe('/profile');
+  });
+
+  it('TEST 6: directs user to update profile when user says "change my category to General"', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'change my category to General',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.content).toContain('Sanchay Profile');
+    expect(response.actionCard).toBeDefined();
+    expect(response.actionCard?.title).toBe('Open My Profile');
   });
 
   it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {

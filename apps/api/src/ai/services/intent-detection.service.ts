@@ -25,7 +25,17 @@ export class IntentDetectionService {
     // 0. Extract service from message, active context, or previous conversation history
     const serviceSlug = this.resolveServiceSlug(raw, contextServiceSlug, history);
 
-    // 1. Check Eligibility Intent (including contextual follow-ups like "I am qualified?", "Am I eligible?", "Can I apply?")
+    // 1. Application Action Intent (e.g. "apply for me", "start application", "fill it for me", etc.)
+    if (this.isApplicationAction(raw)) {
+      return {
+        intent: IntentType.APPLICATION_ACTION,
+        confidence: 0.95,
+        extractedServiceSlug: serviceSlug,
+        extractedParameters: {},
+      };
+    }
+
+    // 2. Check Eligibility Intent (including contextual follow-ups like "I am qualified?", "Am I eligible?", "Can I apply?")
     if (
       raw.includes('eligib') ||
       raw.includes('who can apply') ||
@@ -50,28 +60,6 @@ export class IntentDetectionService {
       return {
         intent: IntentType.ELIGIBILITY_CHECK,
         confidence: 0.95,
-        extractedServiceSlug: serviceSlug,
-        extractedParameters: {},
-      };
-    }
-
-    // 2. Start Application Intent
-    if (
-      raw.includes('start application') ||
-      raw.includes('apply for') ||
-      raw.includes('new application') ||
-      raw.includes('fill form') ||
-      raw.includes('register for') ||
-      (raw.includes('start') && raw.includes('application')) ||
-      (raw.includes('apply') && raw.includes('application')) ||
-      raw.includes('want to apply') ||
-      raw.includes('want to start') ||
-      raw.includes('how to apply') ||
-      raw.includes('where do i apply')
-    ) {
-      return {
-        intent: IntentType.START_APPLICATION,
-        confidence: 0.92,
         extractedServiceSlug: serviceSlug,
         extractedParameters: {},
       };
@@ -190,33 +178,91 @@ export class IntentDetectionService {
     };
   }
 
+  private isApplicationAction(text: string): boolean {
+    const t = text.trim().toLowerCase();
+    return (
+      t === 'apply' ||
+      t === 'apply for me' ||
+      t === 'apply for it' ||
+      t === 'apply now' ||
+      t === 'start application' ||
+      t === 'start my application' ||
+      t === 'fill the application' ||
+      t === 'fill it for me' ||
+      t === 'fill my form' ||
+      t === 'fill form' ||
+      t === 'fill application' ||
+      t === 'complete my application' ||
+      t === 'help me apply' ||
+      t === 'submit my application' ||
+      t === 'proceed with application' ||
+      t === 'continue application' ||
+      t === 'new application' ||
+      t.includes('apply for me') ||
+      t.includes('apply for it') ||
+      t.includes('start my application') ||
+      t.includes('start application') ||
+      t.includes('fill the application') ||
+      t.includes('fill it for me') ||
+      t.includes('fill my form') ||
+      t.includes('fill application') ||
+      t.includes('complete my application') ||
+      t.includes('help me apply') ||
+      t.includes('submit my application') ||
+      t.includes('proceed with application') ||
+      t.includes('continue application') ||
+      t.includes('apply for') ||
+      t.includes('register for') ||
+      t.includes('want to apply') ||
+      t.includes('want to start') ||
+      t.includes('how to apply') ||
+      t.includes('where do i apply') ||
+      (t.includes('apply') && (t.includes('application') || t.includes('form') || t.includes('now') || t.includes('me') || t.includes('jee'))) ||
+      (t.includes('fill') && (t.includes('application') || t.includes('form') || t.includes('it') || t.includes('me') || t.includes('jee')))
+    );
+  }
+
   private resolveServiceSlug(
     text: string,
     fallback?: string,
     history: ConversationHistoryMessage[] = [],
   ): string | undefined {
+    // 1. Explicit service in current message
     const directMatch = this.extractService(text);
     if (directMatch) return directMatch;
 
+    // 2. Active route / service context
     if (fallback && fallback !== 'national-service-directory') {
       return fallback;
     }
 
-    // Search backwards in conversation history for service references
+    // 3. Most recent service mentioned in conversation history
     for (let i = history.length - 1; i >= 0; i--) {
       const msg = history[i].content.toLowerCase();
       const histMatch = this.extractService(msg);
       if (histMatch) return histMatch;
     }
 
-    return fallback;
+    return undefined;
   }
 
   private extractService(text: string): string | undefined {
-    if (text.includes('jee') || text.includes('engineering') || text.includes('nta') || text.includes('iit')) {
+    if (
+      text.includes('jee') ||
+      text.includes('engineering') ||
+      text.includes('nta') ||
+      text.includes('iit') ||
+      text.includes('joint entrance')
+    ) {
       return 'jee-main';
     }
-    if (text.includes('ayushman') || text.includes('health') || text.includes('pmjay') || text.includes('nha')) {
+    if (
+      text.includes('ayushman') ||
+      text.includes('health') ||
+      text.includes('pmjay') ||
+      text.includes('pm-jay') ||
+      text.includes('nha')
+    ) {
       return 'ayushman-bharat';
     }
     return undefined;

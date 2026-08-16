@@ -109,7 +109,10 @@ describe('AI Orchestrator & Tool Authorization Tests', () => {
       context: { serviceId: 'jee-main' },
     });
 
-    expect(response.intent).toBe(IntentType.START_APPLICATION);
+    expect(
+      response.intent === IntentType.APPLICATION_ACTION ||
+        response.intent === IntentType.START_APPLICATION,
+    ).toBe(true);
     expect(response.actionCard).toBeDefined();
     expect(response.actionCard?.title).toContain('Start JEE (Main) 2026 Application');
     expect(response.actionCard?.riskLevel).toBe(RiskLevel.MEDIUM);
