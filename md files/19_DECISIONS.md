@@ -237,6 +237,21 @@ New decisions should be added rather than rewriting history.
 
 ---
 
+## ADR-024 — Citizen Profile Single Source of Truth & Read-Only Application Consumption
+
+**Status:** Accepted
+
+**Decision:** The citizen's **Sanchay Profile** (`/profile` and authenticated `MeService`) is the **SINGLE SOURCE OF TRUTH** for all personal, demographic, contact, and academic information. Government service applications (such as JEE Main, Ayushman Bharat) are **READ-ONLY consumers** of citizen profile data and must NOT provide duplicate editable fields for identity or profile credentials. AI assistants have strictly **READ-ONLY** access and must NEVER directly mutate profile or application identity fields. If personal or academic information is missing or incorrect, the citizen is directed to update their Sanchay Profile, which immediately propagates the updated data across all service applications.
+
+**Reason:**
+1. Prevents conflicting or desynchronized citizen data across multiple government forms.
+2. Enforces least-privilege Zero Trust security by removing write access from conversational AI agents.
+3. Simplifies application prefilling and guarantees statutory field provenance (`✓ Verified from Sanchay Profile`).
+4. Makes corrections made once in the citizen's profile automatically reusable across all national government services.
+5. Eliminates the dangerous pattern of users or AI modifying sovereign identity data within ad-hoc application forms.
+
+---
+
 ## Decision Change Process
 
 When a decision needs to change:

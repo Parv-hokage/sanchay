@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const [identityLinks, setIdentityLinks] = useState<IdentityLink[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [loadingData, setLoadingData] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'identity-links' | 'consents'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'academic' | 'addresses' | 'identity-links' | 'consents'>('profile');
 
   // Edit profile state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -231,6 +231,16 @@ export default function ProfilePage() {
           Personal Details
         </button>
         <button
+          onClick={() => setActiveTab('academic')}
+          className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+            activeTab === 'academic'
+              ? 'border-sanchay-navy-700 text-sanchay-navy-900'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Academic Qualifications
+        </button>
+        <button
           onClick={() => setActiveTab('addresses')}
           className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
             activeTab === 'addresses'
@@ -367,6 +377,54 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tab: Academic */}
+      {activeTab === 'academic' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-base font-bold text-sanchay-navy-900">Academic Qualifications</h2>
+              <p className="text-xs text-slate-500">
+                Verified educational credentials used to auto-fill government examinations and admissions.
+              </p>
+            </div>
+            <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2.5 py-1 rounded-full">
+              ✓ Single Source of Truth
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-slate-800">Class 10 / Secondary</span>
+                <span className="text-[10px] text-emerald-700 font-bold">✓ Verified</span>
+              </div>
+              <div className="text-xs space-y-1">
+                <p><span className="text-slate-500">Board:</span> <strong className="text-slate-900">CBSE</strong></p>
+                <p><span className="text-slate-500">Passing Year:</span> <strong className="text-slate-900">2023</strong></p>
+                <p><span className="text-slate-500">Percentage:</span> <strong className="text-slate-900">94.6%</strong></p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-slate-800">Class 12 / Higher Secondary</span>
+                <span className="text-[10px] text-emerald-700 font-bold">✓ Verified PCM</span>
+              </div>
+              <div className="text-xs space-y-1">
+                <p><span className="text-slate-500">Status:</span> <strong className="text-slate-900">Passed</strong></p>
+                <p><span className="text-slate-500">Passing Year:</span> <strong className="text-slate-900">2025</strong></p>
+                <p><span className="text-slate-500">Board:</span> <strong className="text-slate-900">CBSE</strong></p>
+                <p><span className="text-slate-500">Mandatory Subjects:</span> <strong className="text-slate-900">Physics, Mathematics, Chemistry</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+            💡 <strong>Note:</strong> All government examination applications (such as JEE Main) read directly from these verified credentials. Changes made here immediately reflect in all active application workflows.
+          </div>
         </div>
       )}
 

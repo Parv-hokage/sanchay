@@ -14,8 +14,13 @@ export class CapabilityResolverService {
   resolveCapability(
     intent: IntentType,
     serviceSlug?: string,
+    extractedParams?: Record<string, any>,
   ): ResolvedCapability | null {
     const activeService = serviceSlug || 'jee-main';
+    const isProfile =
+      activeService === 'profile' ||
+      extractedParams?.section === 'profile' ||
+      extractedParams?.route === '/profile';
 
     if (intent === IntentType.START_APPLICATION || intent === IntentType.FILL_APPLICATION) {
       if (activeService === 'jee-main') {
@@ -76,18 +81,22 @@ export class CapabilityResolverService {
 
     if (intent === IntentType.NAVIGATE_SERVICE) {
       return {
-        capabilitySlug: 'navigate-service',
-        serviceSlug: activeService,
-        name: 'Portal Navigation',
-        description: 'Navigate to official service section.',
+        capabilitySlug: isProfile ? 'manage-profile' : 'navigate-service',
+        serviceSlug: isProfile ? 'profile' : activeService,
+        name: isProfile ? 'Citizen Profile Management' : 'Portal Navigation',
+        description: isProfile
+          ? 'Update citizen identity, academic, and contact information.'
+          : 'Navigate to official service section.',
         actionCard: {
-          id: 'act-jee-nav',
-          title: 'Navigate to JEE Main Section',
-          description: 'Open official JEE Main section in Sanchay portal.',
+          id: `act-nav-${Date.now()}`,
+          title: isProfile ? 'Open My Profile' : 'Navigate to Service Section',
+          description: isProfile
+            ? 'Personal and academic data is managed in My Profile as the single source of truth.'
+            : `Open ${activeService} in Sanchay portal.`,
           actionType: 'NAVIGATE_SERVICE',
           payload: {
-            serviceSlug: activeService,
-            route: `/services/${activeService}`,
+            serviceSlug: isProfile ? 'profile' : activeService,
+            route: isProfile ? '/profile' : `/services/${activeService}`,
           },
           riskLevel: RiskLevel.LOW,
           confirmationRequired: false,

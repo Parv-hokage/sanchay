@@ -276,14 +276,15 @@ All meaningful product, architecture, security, API, and implementation changes 
 
 - **JEE Main Application Sandbox Wizard (`apps/web/src/app/services/jee-main/apply/page.tsx`)**:
   - Full 8-step wizard: Personal Details, Contact & Address, Academic Details (Class 10 & 12), Examination Details (Paper & Session Choice), City & Centre Preferences (4 Choices), Documents & Proofs Upload simulation, Comprehensive Citizen Review Sheet, and Consequential Confirmation.
-  - Deterministic profile prefilling from verified citizen sovereign profile with visible provenance indicators (`✓ Verified from Sanchay Profile`, `USER_PROVIDED`, `NEEDS_CONFIRMATION`, `MISSING`).
+  - **Single Source of Truth Architecture (ADR-024)**: Citizen identity, personal, and academic data is strictly **READ-ONLY** within the application form. Sanchay Profile (`/profile`) is the single source of truth for citizen data.
+  - Visible provenance indicators (`✓ Verified from Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Open My Profile]`).
   - Strict zero-trust consequential citizen confirmation guardrail before sandbox submission.
   - Generates deterministic reference numbers (`SANDBOX-JEE-2026-XXXXXX`) with live status dashboard tracking.
   - Prominently labeled with sandbox simulation indicators.
 
-- **AI Application Assistant Flow & Intent Resolution**:
-  - Contextual `START_APPLICATION` and `FILL_APPLICATION` intent detection.
-  - Natural language credential extraction (e.g. Class 12 year and PCM subjects) with confirmation action cards.
+- **AI Profile Correction & Application Flow**:
+  - Zero AI Profile Mutation: AI has read-only access and redirects any profile modification queries to My Profile (`/profile`) with navigation action cards (`[Open My Profile]`).
+  - Contextual `START_APPLICATION` intent detection summarizing available vs missing profile credentials.
   - Action card routing directly to `/services/jee-main/apply`.
 
 - **Safe Markdown Rendering in AI Workspace**:
@@ -292,8 +293,8 @@ All meaningful product, architecture, security, API, and implementation changes 
 ### Fixed
 
 - **JEE Main Service Portal Contrast & Visual Hierarchy**:
-  - Upgraded hero section to high-contrast WCAG AAA compliant styling (`bg-linear-to-br from-[#0B1528] via-[#0F1E36] to-[#162D50]`, crisp text-white headings, high-contrast amber buttons and badges).
+  - Upgraded hero section to high-contrast WCAG AAA compliant styling (`bg-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800`, crisp text-white headings, high-contrast amber buttons and badges).
   - Linked primary and candidate services CTA buttons to `/services/jee-main/apply`.
 
-- **Automated Test Suite**: 80/80 passing tests across monorepo test suites.
+- **Automated Test Suite**: 81/81 passing tests across monorepo test suites.
 

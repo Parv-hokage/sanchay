@@ -258,6 +258,20 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect((response.actionCard?.payload as any)?.route).toBe('/services/jee-main/apply');
   });
 
+  it('directs citizen to My Profile when user reports profile/academic detail is wrong', async () => {
+    const detected = intentService.detectIntent('My Class 12 year is wrong', 'jee-main');
+    expect(detected.intent).toBe(IntentType.NAVIGATE_SERVICE);
+
+    const response = await aiService.processChatMessage({
+      message: 'My Class 12 year is wrong',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.actionCard).toBeDefined();
+    expect(response.actionCard?.title).toBe('Open My Profile');
+    expect((response.actionCard?.payload as any)?.route).toBe('/profile');
+  });
+
   it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {
     // User B tries to access User A's conversation
     mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({

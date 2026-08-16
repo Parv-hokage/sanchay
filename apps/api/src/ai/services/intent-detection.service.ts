@@ -111,8 +111,14 @@ export class IntentDetectionService {
       };
     }
 
-    // 5. Navigation Actions
+    // 5. Navigation & Profile Correction Actions
     if (
+      raw.includes('wrong') ||
+      raw.includes('change my') ||
+      raw.includes('update my') ||
+      raw.includes('edit my') ||
+      raw.includes('open profile') ||
+      raw.includes('my profile') ||
       raw.includes('open') ||
       raw.includes('go to') ||
       raw.includes('navigate') ||
@@ -122,12 +128,20 @@ export class IntentDetectionService {
       raw.includes('show me that') ||
       raw.includes('open it')
     ) {
+      const isProfileIntent =
+        raw.includes('wrong') ||
+        raw.includes('change my') ||
+        raw.includes('update my') ||
+        raw.includes('edit my') ||
+        raw.includes('profile');
+
       return {
         intent: IntentType.NAVIGATE_SERVICE,
-        confidence: 0.9,
+        confidence: 0.92,
         extractedServiceSlug: serviceSlug,
         extractedParameters: {
-          section: this.extractSection(raw, history),
+          section: isProfileIntent ? 'profile' : this.extractSection(raw, history),
+          route: isProfileIntent ? '/profile' : undefined,
         },
       };
     }

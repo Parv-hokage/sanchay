@@ -209,10 +209,12 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Step 7 — JEE Main Application Sandbox + UI Visibility + AI Application Flow**.
+- Completed: **Step 7 — JEE Main Application Sandbox + UI Visibility + AI Application Flow & Profile Single Source of Truth (ADR-024)**.
   - High-contrast WCAG AAA hero and text visibility across the JEE Main portal.
-  - Dedicated `/services/jee-main/apply` 8-step application wizard with verified citizen profile prefill and field provenance indicators.
-  - AI Application Assistant flow (`START_APPLICATION` and `FILL_APPLICATION`) with structured action cards and consequential confirmation guardrails.
+  - Dedicated `/services/jee-main/apply` 8-step application wizard with 100% read-only citizen identity and academic qualification consumption from Sanchay Profile.
+  - Sanchay Profile (`/profile`) established as the SINGLE SOURCE OF TRUTH for all citizen identity, demographic, contact, and academic credentials.
+  - Read-only field provenance indicators (`✓ Verified from Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Open My Profile]`).
+  - Zero AI profile mutation: AI has read-only access and redirects any profile modification requests to My Profile with actionable navigation cards.
   - Sandbox submission generation with reference numbers (`SANDBOX-JEE-2026-XXXXXX`) and live status tracking.
 
 ---
@@ -226,6 +228,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 ## Last Validation
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
-- **Tests:** Passed (80/80 unit and security tests passing across all packages)
+- **Tests:** Passed (81/81 unit and security tests passing across all packages)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully with `/services/jee-main` and `/services/jee-main/apply` prerendered)
-- **Validation Date:** 2026-08-17T00:23:00+05:30
+- **Validation Date:** 2026-08-17T00:50:00+05:30

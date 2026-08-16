@@ -117,6 +117,7 @@ export class AiService {
     const resolvedCap = this.capabilityResolver.resolveCapability(
       detected.intent,
       targetServiceSlug,
+      detected.extractedParameters,
     );
 
     // 4. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational and document queries
