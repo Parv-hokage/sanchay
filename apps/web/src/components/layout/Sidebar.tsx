@@ -7,11 +7,12 @@ import { usePathname } from 'next/navigation';
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
 
-  const navigation = [
+  const navigation: { name: string; href: string; icon: string; badge?: string }[] = [
     { name: 'Service Directory', href: '/', icon: '🏛️' },
     { name: 'My Profile & UID', href: '/profile', icon: '👤' },
-    { name: 'My Applications', href: '#', icon: '📋', badge: 'Soon' },
-    { name: 'Document Vault', href: '#', icon: '📁', badge: 'Soon' },
+    { name: 'My Applications', href: '/applications', icon: '📋' },
+    { name: 'Document Vault', href: '/documents', icon: '📁' },
+    { name: 'Official Knowledge', href: '/knowledge', icon: '📖' },
   ];
 
   return (

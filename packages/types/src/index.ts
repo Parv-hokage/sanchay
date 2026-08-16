@@ -345,6 +345,35 @@ export interface CitizenDocument {
   status: DocumentStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
+  versions?: DocumentVersion[];
+  accessLogs?: DocumentAccessLog[];
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: number;
+  storageKey: string;
+  contentHash: string;
+  mimeType: string;
+  fileSize: number;
+  createdAt: Date;
+}
+
+export interface DocumentAccessLog {
+  id: string;
+  documentId: string;
+  userId: string;
+  actorType: string;
+  purpose: string;
+  action: string;
+  createdAt: Date;
+}
+
+export interface CreateDocumentDto {
+  documentType: DocumentType;
+  title: string;
 }
 
 // ==========================================
@@ -396,6 +425,44 @@ export interface KnowledgeChunk {
   };
 }
 
+export interface Citation {
+  sourceId: string;
+  sourceTitle: string;
+  organization?: string;
+  url: string;
+  section?: string;
+  page?: number;
+  authorityLevel: AuthorityLevel;
+}
+
+export interface Evidence {
+  chunkId: string;
+  documentId: string;
+  sourceId: string;
+  title: string;
+  snippet: string;
+  url: string;
+  section?: string;
+  page?: number;
+  score: number;
+  authorityLevel: AuthorityLevel;
+  retrievedAt: Date;
+  citation: Citation;
+}
+
+export interface KnowledgeSearchParams {
+  query: string;
+  serviceId?: string;
+  organizationId?: string;
+  limit?: number;
+}
+
+export interface KnowledgeSearchResult {
+  query: string;
+  count: number;
+  evidence: Evidence[];
+}
+
 // ==========================================
 // 8. AI & Context Types
 // ==========================================
@@ -405,10 +472,54 @@ export interface SanchayAIContext {
   departmentId?: string;
   organizationId?: string;
   serviceId?: string;
+  section?: string;
+  activeItem?: string;
+  route?: string;
   workflow?: string;
   page?: string;
   currentField?: string;
   availableCapabilities?: string[];
+}
+
+export enum IntentType {
+  KNOWLEDGE_QUERY = 'KNOWLEDGE_QUERY',
+  ELIGIBILITY_CHECK = 'ELIGIBILITY_CHECK',
+  START_APPLICATION = 'START_APPLICATION',
+  FILL_APPLICATION = 'FILL_APPLICATION',
+  CHECK_APPLICATION_STATUS = 'CHECK_APPLICATION_STATUS',
+  FIND_DOCUMENT = 'FIND_DOCUMENT',
+  EXPLAIN_DOCUMENT_REQUIREMENT = 'EXPLAIN_DOCUMENT_REQUIREMENT',
+  NAVIGATE_SERVICE = 'NAVIGATE_SERVICE',
+  GENERAL_HELP = 'GENERAL_HELP',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export enum RiskLevel {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export interface ActionCard {
+  id: string;
+  title: string;
+  description: string;
+  actionType: string;
+  payload: Record<string, unknown>;
+  riskLevel: RiskLevel;
+  confirmationRequired: boolean;
+  isConfirmed?: boolean;
+}
+
+export interface AiConversation {
+  id: string;
+  userId: string;
+  serviceId?: string | null;
+  title: string;
+  contextMetadata?: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
+  messages?: AIChatMessage[];
 }
 
 export enum MessageSender {
@@ -422,18 +533,24 @@ export interface AIChatMessage {
   conversationId: string;
   sender: MessageSender;
   content: string;
-  citations?: {
-    sourceId: string;
-    title: string;
-    url?: string;
-    snippet?: string;
-  }[];
-  actionCard?: {
-    actionType: string;
-    payload: Record<string, unknown>;
-    confirmationRequired: boolean;
-  };
+  citations?: Citation[];
+  actionCard?: ActionCard;
   createdAt: Date;
+}
+
+export interface AiChatDto {
+  conversationId?: string;
+  message: string;
+  context?: SanchayAIContext;
+}
+
+export interface AiChatResponse {
+  conversationId: string;
+  messageId: string;
+  content: string;
+  intent: IntentType;
+  citations: Citation[];
+  actionCard?: ActionCard;
 }
 
 // ==========================================

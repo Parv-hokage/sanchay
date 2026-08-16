@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiRequest } from '../lib/api-client';
+import { LoginModal } from '../components/auth/LoginModal';
 import {
   IdentityProviderType,
   UserStatus,
@@ -16,6 +17,9 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isLoginOpen: boolean;
+  openLogin: () => void;
+  closeLogin: () => void;
   login: (provider: IdentityProviderType, identifier: string) => Promise<LoginResponseData>;
   verifyOtp: (challengeId: string, otp: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -29,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<CitizenProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   useEffect(() => {
     // Check saved session on mount
@@ -65,6 +70,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
   };
 
+  const openLogin = () => setIsLoginOpen(true);
+  const closeLogin = () => setIsLoginOpen(false);
+
   const login = async (provider: IdentityProviderType, identifier: string): Promise<LoginResponseData> => {
     const res = await apiRequest<LoginResponseData>('/auth/login', {
       method: 'POST',
@@ -84,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(sessionToken);
     setUser(authUser);
     setProfile(authProfile);
+    closeLogin();
   };
 
   const logout = async () => {
@@ -114,6 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isAuthenticated: !!user,
         isLoading,
+        isLoginOpen,
+        openLogin,
+        closeLogin,
         login,
         verifyOtp,
         logout,
@@ -121,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {children}
+      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} />
     </AuthContext.Provider>
   );
 };

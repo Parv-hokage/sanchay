@@ -62,81 +62,81 @@ P3 = Future
 
 ## P1
 
-- [ ] Application creation.
-- [ ] Application fields.
-- [ ] Field validation.
-- [ ] Auto-fill engine.
-- [ ] Application state machine.
-- [ ] Review screen.
-- [ ] Confirmation.
-- [ ] Idempotent submission.
-- [ ] Application status.
+- [x] Application creation.
+- [x] Application fields.
+- [x] Field validation.
+- [x] Auto-fill engine.
+- [x] Application state machine.
+- [x] Review screen.
+- [x] Confirmation.
+- [x] Idempotent submission.
+- [x] Application status.
 
 # Phase 4 — Documents
 
 ## P1
 
-- [ ] Upload authorization.
-- [ ] Private object storage.
-- [ ] File validation.
-- [ ] Malware scanning.
-- [ ] Document metadata.
-- [ ] Document versions.
-- [ ] Access logs.
-- [ ] Retention policy.
+- [x] Upload authorization.
+- [x] Private object storage.
+- [x] File validation.
+- [x] Malware scanning.
+- [x] Document metadata.
+- [x] Document versions.
+- [x] Access logs.
+- [x] Retention policy.
 
 # Phase 5 — RAG
 
 ## P1
 
-- [ ] Source registry.
-- [ ] Official-source allowlist.
-- [ ] Fetcher.
-- [ ] HTML extraction.
-- [ ] PDF extraction.
-- [ ] OCR pipeline where required.
-- [ ] Semantic chunking.
-- [ ] Embeddings.
-- [ ] pgvector.
-- [ ] Hybrid search.
-- [ ] Reranking.
-- [ ] Citations.
-- [ ] Versioning.
-- [ ] Change detection.
-- [ ] RAG evaluation dataset.
+- [x] Source registry.
+- [x] Official-source allowlist.
+- [x] Fetcher.
+- [x] HTML extraction.
+- [x] PDF extraction.
+- [x] OCR pipeline where required.
+- [x] Semantic chunking.
+- [x] Embeddings.
+- [x] pgvector.
+- [x] Hybrid search.
+- [x] Reranking.
+- [x] Citations.
+- [x] Versioning.
+- [x] Change detection.
+- [x] RAG evaluation dataset.
 
 # Phase 6 — AI
 
 ## P1
 
-- [ ] AI provider abstraction.
-- [ ] Conversation system.
-- [ ] Intent detection.
-- [ ] Service context.
-- [ ] Capability resolver.
-- [ ] Context builder.
-- [ ] Tool registry.
-- [ ] Tool authorization.
-- [ ] Tool input validation.
-- [ ] Tool output validation.
-- [ ] AI action states.
-- [ ] Confirmation UI.
-- [ ] AI evaluation.
+- [x] AI provider abstraction.
+- [x] Conversation system.
+- [x] Intent detection.
+- [x] Service context.
+- [x] Capability resolver.
+- [x] Context builder.
+- [x] Tool registry.
+- [x] Tool authorization.
+- [x] Tool input validation.
+- [x] Tool output validation.
+- [x] AI action states.
+- [x] Confirmation UI.
+- [x] AI evaluation.
 
 # Phase 7 — JEE
 
 ## P1
 
-- [ ] Confirm authorized NTA integration path.
-- [ ] Implement JEE service definition.
-- [ ] Implement JEE capabilities.
-- [ ] Implement JEE public knowledge ingestion.
-- [ ] Implement eligibility rules.
-- [ ] Implement application mapping.
-- [ ] Implement result retrieval where officially supported.
-- [ ] Implement answer-key retrieval where officially supported.
-- [ ] Implement application status where officially supported.
-- [ ] Test failure states.
+- [x] Confirm authorized NTA integration path.
+- [x] Implement JEE service definition.
+- [x] Implement JEE capabilities.
+- [x] Implement JEE public knowledge ingestion.
+- [x] Implement eligibility rules.
+- [x] Implement application mapping.
+- [x] Implement result retrieval where officially supported.
+- [x] Implement answer-key retrieval where officially supported.
+- [x] Implement application status where officially supported.
+- [x] Test failure states.
 
 # Phase 8 — Ayushman
 

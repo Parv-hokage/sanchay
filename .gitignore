@@ -43,7 +43,8 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Temp
+# Temp & Storage
 temp/
 tmp/
 scratch/
+.sanchay-vault/

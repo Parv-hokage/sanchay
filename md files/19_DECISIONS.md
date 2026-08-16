@@ -227,6 +227,16 @@ New decisions should be added rather than rewriting history.
 
 ---
 
+## ADR-023 — Adoption of Qwen3 Model Family for Contextual AI & Tool Reasoning
+
+**Status:** Accepted
+
+**Decision:** Sanchay adopts **Qwen3** as the initial/default LLM family for conversational reasoning, intent detection, and structured tool planning. The application connects via an `AIProvider` abstraction (`Qwen3Adapter`) with server-side credentials and local deterministic reasoning fallback. Future government deployments can transition to self-hosted Qwen3 instances without application code changes.
+
+**Reason:** Guarantees sovereign model deployment capabilities, open-weights portability for national infrastructure, strict isolation of API credentials from the browser, and architectural decoupling from proprietary model vendor lock-in.
+
+---
+
 ## Decision Change Process
 
 When a decision needs to change:

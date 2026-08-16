@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { apiRequest } from '../../../lib/api-client';
 import { AIButton } from '../../../components/ai/AIButton';
+import { KnowledgeSearchWidget } from '../../../components/knowledge/KnowledgeSearchWidget';
 
 interface ServiceCapabilityRequirement {
   id: string;
@@ -196,10 +197,16 @@ export default function ServiceDetailPage({
         <div>
           <p className="font-bold">Unified Government Service Layer</p>
           <p className="text-[11px] text-slate-600">
-            Sanchay connects directly to verified authority endpoints. In Phase 3, you will be able to prepare applications and auto-fill verified profile data with one-click consent.
+            Sanchay connects directly to verified authority endpoints. Auto-fill verified profile data with one-click consent and transparent confirmation.
           </p>
         </div>
       </div>
+
+      {/* Source-Grounded Knowledge Search Engine for this Service */}
+      <KnowledgeSearchWidget
+        initialServiceId={service.slug}
+        placeholder={`Search official ${service.name} rules, eligibility, bulletins & circulars...`}
+      />
 
       {/* Capabilities Layout (2 Columns: List on left, Requirement preview on right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -319,22 +326,23 @@ export default function ServiceDetailPage({
                 )}
               </div>
 
-              {/* Action Preview Button (Phase 3 Hook) */}
+              {/* Action Button */}
               <div className="pt-3 border-t border-slate-100">
-                <button
-                  onClick={() => {
-                    alert(`Phase 3 will launch the Application Automation & Auto-Fill engine for ${selectedCapability.name}.`);
-                  }}
-                  className="w-full py-2.5 bg-sanchay-gold-600 hover:bg-sanchay-gold-700 text-white font-semibold rounded-xl text-xs transition-colors shadow-xs"
+                <Link
+                  href={`/applications/new?serviceSlug=${service.slug}&capabilitySlug=${selectedCapability.slug}`}
+                  className="w-full py-2.5 bg-sanchay-gold-600 hover:bg-sanchay-gold-700 text-white font-semibold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
                 >
-                  {selectedCapability.type === 'ACTION'
-                    ? 'Start Online Application (Phase 3)'
-                    : selectedCapability.type === 'DOCUMENT'
-                    ? 'Retrieve Document (Phase 3)'
-                    : 'Execute Capability (Phase 3)'}
-                </button>
+                  <span>
+                    {selectedCapability.type === 'ACTION'
+                      ? 'Start Online Application'
+                      : selectedCapability.type === 'DOCUMENT'
+                      ? 'Retrieve Document'
+                      : 'Launch Service Capability'}
+                  </span>
+                  <span>→</span>
+                </Link>
                 <p className="text-[10px] text-slate-400 text-center mt-2 italic">
-                  Deterministic Auto-Fill engine operational in Phase 3.
+                  Deterministic Auto-Fill & Consent Protected.
                 </p>
               </div>
             </div>
