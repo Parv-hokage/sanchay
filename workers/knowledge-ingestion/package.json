@@ -1,0 +1,20 @@
+{
+  "name": "@sanchay/worker-knowledge-ingestion",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'Linting knowledge ingestion worker'",
+    "test": "echo 'No tests for knowledge ingestion worker yet'"
+  },
+  "dependencies": {
+    "@sanchay/config": "workspace:*",
+    "@sanchay/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

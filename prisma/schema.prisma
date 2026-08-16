@@ -1,0 +1,676 @@
+// ==============================================================================
+// SANCHAY — Prisma Database Schema
+// Single source of truth for persistent relational & vector data
+// Follows 08_DATABASE.md and 11_SECURITY.md
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. Identity Domain
+// ==========================================
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model User {
+  id          String     @id @default(uuid()) @db.Uuid
+  sanchayUid  String     @unique @map("sanchay_uid") @db.Uuid
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  lastLoginAt DateTime?  @map("last_login_at")
+
+  profile        Profile?
+  addresses      Address[]
+  contactMethods ContactMethod[]
+  sessions       AuthSession[]
+  identityLinks  IdentityLink[]
+  consents       Consent[]
+  applications   Application[]
+  documents      CitizenDocument[]
+  conversations  AiConversation[]
+  notifications  Notification[]
+
+  @@index([sanchayUid])
+  @@map("users")
+}
+
+model AuthSession {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("auth_sessions")
+}
+
+enum IdentityProvider {
+  DIGILOCKER
+  PARICHAAY
+  MOBILE_OTP
+  EMAIL_OTP
+  MOCK_IDP
+}
+
+model IdentityLink {
+  id                        String           @id @default(uuid()) @db.Uuid
+  userId                    String           @map("user_id") @db.Uuid
+  serviceId                 String?          @map("service_id") @db.Uuid
+  provider                  IdentityProvider
+  externalSubjectReference String           @map("external_subject_reference") // Encrypted / Protected
+  isVerified                Boolean          @default(false) @map("is_verified")
+  verifiedAt                DateTime?        @map("verified_at")
+  createdAt                 DateTime         @default(now()) @map("created_at")
+  updatedAt                 DateTime         @updatedAt @map("updated_at")
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service GovernmentService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, provider, serviceId])
+  @@index([userId])
+  @@map("identity_links")
+}
+
+// ==========================================
+// 2. Profile Domain
+// ==========================================
+
+model Profile {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @map("user_id") @db.Uuid
+  fullName          String   @map("full_name")
+  dateOfBirth       String?  @map("date_of_birth") // YYYY-MM-DD
+  gender            String?  @map("gender")
+  preferredLanguage String   @default("en") @map("preferred_language")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+enum AddressType {
+  PERMANENT
+  CORRESPONDENCE
+}
+
+model Address {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  addressType  AddressType @default(PERMANENT) @map("address_type")
+  addressLine1 String      @map("address_line_1")
+  addressLine2 String?     @map("address_line_2")
+  city         String      @map("city")
+  district     String      @map("district")
+  state        String      @map("state")
+  postalCode   String      @map("postal_code")
+  country      String      @default("India") @map("country")
+  isPrimary    Boolean     @default(true) @map("is_primary")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+enum ContactType {
+  PHONE
+  EMAIL
+}
+
+model ContactMethod {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @map("user_id") @db.Uuid
+  type           ContactType
+  valueReference String      @map("value_reference") // Masked / Encrypted reference
+  isVerified     Boolean     @default(false) @map("is_verified")
+  isPrimary      Boolean     @default(false) @map("is_primary")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("contact_methods")
+}
+
+// ==========================================
+// 3. Consent & Permissions Domain
+// ==========================================
+
+enum ConsentStatus {
+  GRANTED
+  REVOKED
+  EXPIRED
+}
+
+model Consent {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  serviceId String        @map("service_id") @db.Uuid
+  purpose   String        @map("purpose")
+  scope     Json          @map("scope") // Array of authorized fields/capabilities
+  status    ConsentStatus @default(GRANTED)
+  grantedAt DateTime      @default(now()) @map("granted_at")
+  revokedAt DateTime?     @map("revoked_at")
+  version   String        @default("1.0")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service GovernmentService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, serviceId])
+  @@map("consents")
+}
+
+model Permission {
+  id           String    @id @default(uuid()) @db.Uuid
+  subjectType  String    @map("subject_type")
+  subjectId    String    @map("subject_id")
+  resourceType String    @map("resource_type")
+  resourceId   String    @map("resource_id")
+  action       String    @map("action")
+  effect       String    @default("ALLOW") @map("effect")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime? @map("expires_at")
+
+  @@index([subjectType, subjectId])
+  @@index([resourceType, resourceId])
+  @@map("permissions")
+}
+
+// ==========================================
+// 4. Service Domain
+// ==========================================
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+model Department {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  slug        String       @unique
+  description String
+  iconName    String?      @map("icon_name")
+  status      EntityStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  organizations Organization[]
+
+  @@index([slug])
+  @@map("departments")
+}
+
+model Organization {
+  id             String       @id @default(uuid()) @db.Uuid
+  departmentId   String       @map("department_id") @db.Uuid
+  name           String
+  slug           String       @unique
+  officialDomain String       @map("official_domain")
+  description    String
+  status         EntityStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  department       Department          @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  services         GovernmentService[]
+  knowledgeSources KnowledgeSource[]
+
+  @@index([departmentId])
+  @@index([slug])
+  @@map("organizations")
+}
+
+model GovernmentService {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  name           String
+  slug           String       @unique
+  description    String
+  officialUrl    String       @map("official_url")
+  status         EntityStatus @default(ACTIVE)
+  version        String       @default("1.0")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization     Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  capabilities     ServiceCapability[]
+  integrations     ServiceIntegration[]
+  applications     Application[]
+  consents         Consent[]
+  identityLinks    IdentityLink[]
+  knowledgeSources KnowledgeSource[]
+  aiConversations  AiConversation[]
+
+  @@index([organizationId])
+  @@index([slug])
+  @@map("services")
+}
+
+enum CapabilityType {
+  KNOWLEDGE
+  RETRIEVE
+  DOCUMENT
+  ACTION
+  STATUS
+  TRANSFORM
+}
+
+model ServiceCapability {
+  id                     String         @id @default(uuid()) @db.Uuid
+  serviceId              String         @map("service_id") @db.Uuid
+  name                   String
+  slug                   String
+  type                   CapabilityType
+  description            String
+  requiresAuthentication Boolean        @default(true) @map("requires_authentication")
+  requiresConsent        Boolean        @default(true) @map("requires_consent")
+  requiresConfirmation   Boolean        @default(false) @map("requires_confirmation")
+  auditRequired          Boolean        @default(true) @map("audit_required")
+  status                 EntityStatus   @default(ACTIVE)
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+
+  service          GovernmentService              @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  requirements     ServiceCapabilityRequirement[]
+  aiToolExecutions AiToolExecution[]
+
+  @@unique([serviceId, slug])
+  @@index([serviceId])
+  @@map("service_capabilities")
+}
+
+model ServiceCapabilityRequirement {
+  id             String  @id @default(uuid()) @db.Uuid
+  capabilityId   String  @map("capability_id") @db.Uuid
+  fieldKey       String  @map("field_key")
+  label          String
+  required       Boolean @default(true)
+  source         String  @default("PROFILE") // PROFILE | USER | GOVERNMENT
+  validationRule String? @map("validation_rule")
+
+  capability ServiceCapability @relation(fields: [capabilityId], references: [id], onDelete: Cascade)
+
+  @@unique([capabilityId, fieldKey])
+  @@index([capabilityId])
+  @@map("service_capability_requirements")
+}
+
+model ServiceIntegration {
+  id              String       @id @default(uuid()) @db.Uuid
+  serviceId       String       @map("service_id") @db.Uuid
+  integrationType String       @map("integration_type") // REST | MOCK | GATEWAY
+  baseReference   String       @map("base_reference") // Adapter Identifier
+  status          EntityStatus @default(ACTIVE)
+  version         String       @default("1.0")
+  healthStatus    String       @default("HEALTHY") @map("health_status")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  service GovernmentService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@map("service_integrations")
+}
+
+// ==========================================
+// 5. Applications Domain
+// ==========================================
+
+enum ApplicationStatus {
+  DRAFT
+  IN_PROGRESS
+  READY_FOR_REVIEW
+  SUBMITTING
+  SUBMITTED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+model Application {
+  id                           String            @id @default(uuid()) @db.Uuid
+  userId                       String            @map("user_id") @db.Uuid
+  serviceId                    String            @map("service_id") @db.Uuid
+  externalApplicationReference String?           @map("external_application_reference")
+  status                       ApplicationStatus @default(DRAFT)
+  currentStep                  String            @default("PERSONAL_INFO") @map("current_step")
+  submittedAt                  DateTime?         @map("submitted_at")
+  createdAt                    DateTime          @default(now()) @map("created_at")
+  updatedAt                    DateTime          @updatedAt @map("updated_at")
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service GovernmentService  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  fields  ApplicationField[]
+  events  ApplicationEvent[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([status])
+  @@map("applications")
+}
+
+enum FieldSource {
+  USER
+  PROFILE
+  GOVERNMENT
+  SYSTEM
+  AI_ASSISTED
+}
+
+model ApplicationField {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  fieldKey      String      @map("field_key")
+  fieldValue    String      @map("field_value") // Encrypted / Protected if sensitive
+  source        FieldSource @default(USER)
+  verified      Boolean     @default(false)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, fieldKey])
+  @@index([applicationId])
+  @@map("application_fields")
+}
+
+model ApplicationEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  applicationId String   @map("application_id") @db.Uuid
+  eventType     String   @map("event_type")
+  actorType     String   @map("actor_type") // USER | SYSTEM | ADAPTER | AI
+  actorId       String?  @map("actor_id")
+  metadata      Json?    @map("metadata")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_events")
+}
+
+// ==========================================
+// 6. Documents Domain
+// ==========================================
+
+enum DocumentType {
+  IDENTITY_PROOF
+  ADDRESS_PROOF
+  EDUCATION_CERTIFICATE
+  PHOTOGRAPH
+  SIGNATURE
+  INCOME_CERTIFICATE
+  CATEGORY_CERTIFICATE
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING_SCAN
+  VERIFIED
+  REJECTED
+  QUARANTINED
+}
+
+model CitizenDocument {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  documentType DocumentType   @map("document_type")
+  title        String
+  storageKey   String         @map("storage_key")
+  mimeType     String         @map("mime_type")
+  fileSize     Int            @map("file_size")
+  status       DocumentStatus @default(PENDING_SCAN)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions   DocumentVersion[]
+  accessLogs DocumentAccessLog[]
+
+  @@index([userId])
+  @@index([documentType])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  documentId  String   @map("document_id") @db.Uuid
+  version     Int      @default(1)
+  storageKey  String   @map("storage_key")
+  contentHash String   @map("content_hash")
+  mimeType    String   @map("mime_type")
+  fileSize    Int      @map("file_size")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  document CitizenDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@map("document_versions")
+}
+
+model DocumentAccessLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  documentId String   @map("document_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  actorType  String   @map("actor_type")
+  purpose    String
+  action     String // VIEW | DOWNLOAD | ATTACH_TO_APPLICATION
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document CitizenDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([userId])
+  @@map("document_access_logs")
+}
+
+// ==========================================
+// 7. Knowledge Domain (RAG)
+// ==========================================
+
+enum KnowledgeSourceType {
+  WEBPAGE
+  PDF
+  NOTIFICATION
+  CIRCULAR
+  FAQ
+  GUIDELINE
+  RULE
+}
+
+enum AuthorityLevel {
+  TIER_1_OFFICIAL_GOV
+  TIER_2_OFFICIAL_AGENCY
+  TIER_3_GOV_PUBLICATION
+  TIER_4_REFERENCE
+}
+
+model KnowledgeSource {
+  id             String              @id @default(uuid()) @db.Uuid
+  serviceId      String?             @map("service_id") @db.Uuid
+  organizationId String?             @map("organization_id") @db.Uuid
+  sourceType     KnowledgeSourceType @map("source_type")
+  url            String
+  title          String
+  authorityLevel AuthorityLevel      @default(TIER_1_OFFICIAL_GOV) @map("authority_level")
+  status         EntityStatus        @default(ACTIVE)
+  lastCheckedAt  DateTime?           @map("last_checked_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  service      GovernmentService?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  organization Organization?       @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  documents    KnowledgeDocument[]
+
+  @@index([serviceId])
+  @@index([organizationId])
+  @@index([url])
+  @@map("knowledge_sources")
+}
+
+model KnowledgeDocument {
+  id          String       @id @default(uuid()) @db.Uuid
+  sourceId    String       @map("source_id") @db.Uuid
+  contentHash String       @map("content_hash")
+  title       String
+  publishedAt DateTime?    @map("published_at")
+  retrievedAt DateTime     @default(now()) @map("retrieved_at")
+  version     Int          @default(1)
+  language    String       @default("en")
+  status      EntityStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  source KnowledgeSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  chunks KnowledgeChunk[]
+
+  @@index([sourceId])
+  @@index([contentHash])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id                  String   @id @default(uuid()) @db.Uuid
+  knowledgeDocumentId String   @map("knowledge_document_id") @db.Uuid
+  chunkIndex          Int      @map("chunk_index")
+  content             String   @db.Text
+  tokenCount          Int      @map("token_count")
+  metadata            Json     @map("metadata") // section, heading, page, authority
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  document KnowledgeDocument @relation(fields: [knowledgeDocumentId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeDocumentId])
+  @@map("knowledge_chunks")
+}
+
+// ==========================================
+// 8. AI Domain
+// ==========================================
+
+model AiConversation {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  serviceId       String?  @map("service_id") @db.Uuid
+  title           String   @default("New Conversation")
+  contextMetadata Json?    @map("context_metadata") // current department, workflow, step
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service  GovernmentService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  messages AiMessage[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@map("ai_conversations")
+}
+
+enum MessageSender {
+  USER
+  AI
+  SYSTEM
+}
+
+model AiMessage {
+  id             String        @id @default(uuid()) @db.Uuid
+  conversationId String        @map("conversation_id") @db.Uuid
+  sender         MessageSender
+  content        String        @db.Text
+  citations      Json?         @map("citations")
+  actionPayload  Json?         @map("action_payload")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  conversation   AiConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  toolExecutions AiToolExecution[]
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+model AiToolExecution {
+  id                 String   @id @default(uuid()) @db.Uuid
+  messageId          String   @map("message_id") @db.Uuid
+  capabilityId       String   @map("capability_id") @db.Uuid
+  inputParams        Json     @map("input_params")
+  resultData         Json?    @map("result_data")
+  status             String   @default("SUCCESS") // SUCCESS | FAILED | REJECTED
+  executionLatencyMs Int      @default(0) @map("execution_latency_ms")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  message    AiMessage         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  capability ServiceCapability @relation(fields: [capabilityId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([capabilityId])
+  @@map("ai_tool_executions")
+}
+
+// ==========================================
+// 9. System Domain: Audit & Notifications
+// ==========================================
+
+model AuditEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String?  @map("actor_id")
+  actorType    String   @default("USER") @map("actor_type") // USER | SYSTEM | ADMIN | AI_AGENT
+  action       String   @map("action")
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  requestId    String   @map("request_id")
+  metadata     Json?    @map("metadata")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([requestId])
+  @@map("audit_events")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  title     String
+  message   String
+  type      String    @default("INFO") // INFO | ALERT | APPLICATION_UPDATE
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
