@@ -261,5 +261,10 @@ All meaningful product, architecture, security, API, and implementation changes 
 - AI Response Contract Unwrapping & Rendering Bug (`apps/api/src/ai/ai.controller.ts`, `apps/web/src/components/ai/AIWorkspaceDrawer.tsx`):
   - Standardized `AiController` to return domain payload directly to `TransformInterceptor`, eliminating double `data.data` nesting.
   - Made `AIWorkspaceDrawer` response parsing defensive to safely unpack content across all envelope variants.
-  - Added 10s `AbortController` timeout to remote Qwen provider fetch in `Qwen3Adapter` and dedicated deterministic greeting responses for `"hi"`, `"hello"`, `"namaste"`.
+  - Added 30s `AbortController` timeout to remote Qwen provider fetch in `Qwen3Adapter`.
+- AI Quality Bug — Conditional RAG & Dynamic Breadcrumb Hierarchy:
+  - Restricted RAG retrieval to factual knowledge queries (`KNOWLEDGE_QUERY`, `ELIGIBILITY_CHECK`), eliminating unrelated citations on greetings and capability inquiries.
+  - Implemented `AIContextProvider` dynamically propagating full government hierarchy (`Ministry → Department → Service → Active Tab/Section`) to the AI Drawer.
+  - Added real OpenRouter free Qwen (`qwen/qwen3-30b-a3b`) integration with automatic fallback to deterministic reasoning engine.
+- Automated Test Suite: 79/79 passing tests across 19 test suites (all packages passing).
 

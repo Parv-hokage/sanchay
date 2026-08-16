@@ -182,7 +182,7 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Testing Status
 
-- **Unit & Security Tests:** **76 tests across 19 test suites — ALL PASSING (100%)**.
+- **Unit & Security Tests:** **79 tests across 19 test suites — ALL PASSING (100%)**.
   - `packages/config` (2 tests)
   - `packages/validation` (7 tests)
   - `packages/shared` (1 test)
@@ -201,14 +201,15 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
   - `apps/api/src/knowledge` (SSRF & Domain Security) (6 tests)
   - `apps/api/src/ai` (Orchestrator & Intent Resolution) (3 tests)
   - `apps/api/src/ai` (Security, Injection & Confirmation) (4 tests)
-  - `apps/api/src/ai` (JEE Navigation, Screen Context & Privacy) (5 tests)
-- **Current Test Result:** 100% Passed (76/76 tests passing).
+  - `apps/api/src/ai` (JEE Navigation, Screen Context & RAG Conditionality) (8 tests)
+- **Current Test Result:** 100% Passed (79/79 tests passing).
+- **AI Engine:** OpenRouter Free Qwen (`qwen/qwen3-30b-a3b`) real LLM generation active for runtime with automatic deterministic fallback on missing key / timeout.
 
 ---
 
 ## Current Task
 
-- Completed: **Phase 7 — JEE Service Recreation & AI Integration**.
+- Completed: **Phase 7 — JEE Service Recreation & Real Qwen AI Integration**.
 
 ---
 
@@ -221,6 +222,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 ## Last Validation
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
-- **Tests:** Passed (76/76 unit and security tests passing)
+- **Tests:** Passed (79/79 unit and security tests passing)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully with `/services/jee-main` prerendered)
-- **Validation Date:** 2026-08-16T17:05:00+05:30
+- **Validation Date:** 2026-08-16T20:07:00+05:30
