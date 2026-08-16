@@ -111,19 +111,24 @@ export class AiService {
       targetServiceSlug,
     );
 
-    // 4. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational queries
+    // 4. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational and document queries
     let citations: Citation[] = [];
     let retrievedEvidence: any[] = [];
 
     const isInformationalQuery =
       detected.intent === IntentType.KNOWLEDGE_QUERY ||
-      detected.intent === IntentType.ELIGIBILITY_CHECK;
+      detected.intent === IntentType.ELIGIBILITY_CHECK ||
+      detected.intent === IntentType.FIND_DOCUMENT;
 
     if (isInformationalQuery) {
-      const searchQuery =
-        rawMessage.length < 15 && detected.intent === IntentType.ELIGIBILITY_CHECK
-          ? `${targetServiceSlug || 'jee-main'} eligibility criteria qualification`
-          : rawMessage;
+      let searchQuery = rawMessage;
+      if (rawMessage.length < 25) {
+        if (detected.intent === IntentType.ELIGIBILITY_CHECK) {
+          searchQuery = `${targetServiceSlug || 'jee-main'} eligibility criteria qualification`;
+        } else if (detected.intent === IntentType.FIND_DOCUMENT) {
+          searchQuery = `${targetServiceSlug || 'jee-main'} required documents certificates upload`;
+        }
+      }
 
       const searchRes = await this.knowledgeService.searchKnowledge({
         query: searchQuery,
