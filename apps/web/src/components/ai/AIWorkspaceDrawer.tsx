@@ -327,11 +327,14 @@ export const AIWorkspaceDrawer: React.FC<AIWorkspaceDrawerProps> = ({
                         </div>
                       ) : (
                         <Link
-                          href={`/applications/new?serviceSlug=${(msg.actionCard.payload as any)?.serviceSlug || 'jee-main'}`}
+                          href={
+                            (msg.actionCard.payload as any)?.route ||
+                            `/services/${(msg.actionCard.payload as any)?.serviceSlug || 'jee-main'}/apply`
+                          }
                           onClick={onClose}
                           className="block text-center py-2 bg-sanchay-gold-500 hover:bg-sanchay-gold-600 text-sanchay-navy-950 font-bold text-xs rounded-xl shadow-xs transition-colors"
                         >
-                          Review & Start Application →
+                          Review Application →
                         </Link>
                       )}
                     </div>

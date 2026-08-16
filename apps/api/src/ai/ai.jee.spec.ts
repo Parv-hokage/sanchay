@@ -243,6 +243,21 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(detectedDocs.extractedServiceSlug).toBe('jee-main');
   });
 
+  it('detects START_APPLICATION intent and returns action card linking to /services/jee-main/apply', async () => {
+    const detected = intentService.detectIntent('I want to apply for JEE Main.', 'jee-main');
+    expect(detected.intent).toBe(IntentType.START_APPLICATION);
+
+    const response = await aiService.processChatMessage({
+      message: 'I want to apply for JEE Main.',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.intent).toBe(IntentType.START_APPLICATION);
+    expect(response.actionCard).toBeDefined();
+    expect(response.actionCard?.actionType).toBe('START_APPLICATION');
+    expect((response.actionCard?.payload as any)?.route).toBe('/services/jee-main/apply');
+  });
+
   it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {
     // User B tries to access User A's conversation
     mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({

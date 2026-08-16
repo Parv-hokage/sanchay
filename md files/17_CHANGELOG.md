@@ -268,3 +268,32 @@ All meaningful product, architecture, security, API, and implementation changes 
   - Added real OpenRouter free Qwen (`qwen/qwen3-30b-a3b`) integration with automatic fallback to deterministic reasoning engine.
 - Automated Test Suite: 79/79 passing tests across 19 test suites (all packages passing).
 
+---
+
+## [0.8.1] — 2026-08-17 — Step 7: JEE Main Application Sandbox & AI Application Flow
+
+### Added
+
+- **JEE Main Application Sandbox Wizard (`apps/web/src/app/services/jee-main/apply/page.tsx`)**:
+  - Full 8-step wizard: Personal Details, Contact & Address, Academic Details (Class 10 & 12), Examination Details (Paper & Session Choice), City & Centre Preferences (4 Choices), Documents & Proofs Upload simulation, Comprehensive Citizen Review Sheet, and Consequential Confirmation.
+  - Deterministic profile prefilling from verified citizen sovereign profile with visible provenance indicators (`✓ Verified from Sanchay Profile`, `USER_PROVIDED`, `NEEDS_CONFIRMATION`, `MISSING`).
+  - Strict zero-trust consequential citizen confirmation guardrail before sandbox submission.
+  - Generates deterministic reference numbers (`SANDBOX-JEE-2026-XXXXXX`) with live status dashboard tracking.
+  - Prominently labeled with sandbox simulation indicators.
+
+- **AI Application Assistant Flow & Intent Resolution**:
+  - Contextual `START_APPLICATION` and `FILL_APPLICATION` intent detection.
+  - Natural language credential extraction (e.g. Class 12 year and PCM subjects) with confirmation action cards.
+  - Action card routing directly to `/services/jee-main/apply`.
+
+- **Safe Markdown Rendering in AI Workspace**:
+  - Zero-vulnerability `MarkdownRenderer` component using `react-markdown` and `remark-gfm` with strict URL protocol sanitization (permits only `http:`, `https:`, `mailto:`, relative paths; rejects `javascript:`, `data:`, `file:`, `vbscript:`).
+
+### Fixed
+
+- **JEE Main Service Portal Contrast & Visual Hierarchy**:
+  - Upgraded hero section to high-contrast WCAG AAA compliant styling (`bg-linear-to-br from-[#0B1528] via-[#0F1E36] to-[#162D50]`, crisp text-white headings, high-contrast amber buttons and badges).
+  - Linked primary and candidate services CTA buttons to `/services/jee-main/apply`.
+
+- **Automated Test Suite**: 80/80 passing tests across monorepo test suites.
+

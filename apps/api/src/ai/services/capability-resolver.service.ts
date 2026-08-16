@@ -19,19 +19,23 @@ export class CapabilityResolverService {
 
     if (intent === IntentType.START_APPLICATION || intent === IntentType.FILL_APPLICATION) {
       if (activeService === 'jee-main') {
+        const isFilling = intent === IntentType.FILL_APPLICATION;
         return {
           capabilitySlug: 'apply-jee-main-2026',
           serviceSlug: 'jee-main',
           name: 'JEE (Main) 2026 Online Application',
           description: 'Prepare and auto-fill JEE Main application form with verified citizen profile.',
           actionCard: {
-            id: 'act-jee-start',
-            title: 'Start JEE (Main) 2026 Application',
-            description: 'Sanchay will auto-fill your verified profile details, addresses, and contacts.',
-            actionType: 'START_APPLICATION',
+            id: `act-jee-${Date.now()}`,
+            title: isFilling ? 'Review Proposed Application Values' : 'Start JEE (Main) 2026 Application',
+            description: isFilling
+              ? 'Class 12 Year: 2025 | Subjects: Physics, Chemistry, Mathematics'
+              : '18 fields can be pre-filled from your verified profile. 4 fields need your input.',
+            actionType: isFilling ? 'FILL_APPLICATION' : 'START_APPLICATION',
             payload: {
               serviceSlug: 'jee-main',
               capabilitySlug: 'apply-jee-main-2026',
+              route: '/services/jee-main/apply',
             },
             riskLevel: RiskLevel.MEDIUM,
             confirmationRequired: false,

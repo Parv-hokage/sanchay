@@ -255,55 +255,55 @@ export default function JeeMainServicePortal() {
 
 
       {/* Breadcrumb Hierarchy */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/" className="hover:text-sanchay-navy-700">Home</Link>
+      <nav className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+        <Link href="/" className="hover:text-sanchay-navy-800 text-slate-700">Home</Link>
         <span>/</span>
-        <Link href="/departments" className="hover:text-sanchay-navy-700">Education</Link>
+        <Link href="/departments" className="hover:text-sanchay-navy-800 text-slate-700">Education</Link>
         <span>/</span>
-        <span className="text-slate-600 font-medium">National Testing Agency (NTA)</span>
+        <span className="text-slate-700 font-medium">National Testing Agency (NTA)</span>
         <span>/</span>
-        <span className="font-bold text-sanchay-navy-900">JEE (Main) 2026</span>
+        <span className="font-bold text-sanchay-navy-950">JEE (Main) 2026</span>
       </nav>
 
-      {/* Hero Portal Header */}
-      <div className="bg-linear-to-r from-sanchay-navy-950 via-sanchay-navy-900 to-sanchay-navy-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-sanchay-navy-800 relative overflow-hidden">
+      {/* Hero Portal Header - High Contrast WCAG AAA Compliant */}
+      <div className="bg-linear-to-br from-[#0B1528] via-[#0F1E36] to-[#162D50] text-white rounded-3xl p-6 sm:p-9 shadow-2xl border border-slate-700/60 relative overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-sanchay-gold-300 bg-white/10 px-2.5 py-0.5 rounded-md border border-white/15">
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-950 bg-amber-400 px-3 py-1 rounded-md shadow-xs">
                 National Testing Agency (NTA)
               </span>
-              <span className="text-xs text-slate-300">
-                Official Portal: <code className="font-mono text-sanchay-gold-200">jeemain.nta.nic.in</code>
+              <span className="text-xs text-slate-200 font-semibold">
+                Official Portal: <code className="font-mono text-amber-300 font-bold bg-white/10 px-2 py-0.5 rounded">jeemain.nta.nic.in</code>
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3.5xl font-black tracking-tight text-white drop-shadow-sm">
               Joint Entrance Examination (Main) 2026
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-100 max-w-2xl leading-relaxed font-normal">
               Official gateway for admission to Undergraduate Engineering Programs (B.E./B.Tech.) at NITs, IIITs, CFTIs, and eligibility test for JEE (Advanced).
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
             <Link
-              href="/applications/new?serviceSlug=jee-main&capabilitySlug=apply-jee-main-2026"
-              className="px-5 py-2.5 bg-sanchay-gold-500 hover:bg-sanchay-gold-600 text-sanchay-navy-950 font-bold rounded-xl text-xs transition-colors shadow-md text-center flex items-center justify-center gap-1.5"
+              href="/services/jee-main/apply"
+              className="px-6 py-3 bg-amber-400 hover:bg-amber-300 active:scale-98 text-slate-950 font-black rounded-xl text-sm transition-all shadow-xl hover:shadow-2xl text-center flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Apply for JEE (Main) 2026</span>
-              <span>→</span>
+              <span className="text-base">→</span>
             </Link>
           </div>
         </div>
 
         {/* Source Authenticity Banner */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-300">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-sanchay-emerald-400 animate-pulse" />
-            <span>Service Status: <strong>Session 1 Scorecards Published & Session 2 Active</strong></span>
+        <div className="mt-6 pt-4 border-t border-slate-700/70 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-200">
+          <div className="flex items-center gap-2.5 bg-emerald-950/70 border border-emerald-500/40 px-3 py-1.5 rounded-full">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-xs" />
+            <span className="text-emerald-200 font-semibold">Service Status: <strong className="text-white font-black">Session 1 Scorecards Published & Session 2 Active</strong></span>
           </div>
-          <span className="text-slate-400">
+          <span className="text-slate-300 font-medium">
             Source: National Testing Agency / Official Information Bulletins & Circulars
           </span>
         </div>
@@ -726,7 +726,7 @@ export default function JeeMainServicePortal() {
               </div>
 
               <Link
-                href="/applications/new?serviceSlug=jee-main&capabilitySlug=apply-jee-main-2026"
+                href="/services/jee-main/apply"
                 className="w-full py-2.5 bg-sanchay-navy-800 hover:bg-sanchay-navy-900 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
               >
                 <span>Launch Application Wizard</span>
