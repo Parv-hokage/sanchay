@@ -27,10 +27,30 @@ export async function apiRequest<T>(
     headers,
   });
 
-  const json = await response.json();
+  const contentType = response.headers.get('content-type') || '';
+  let json: any = null;
+
+  if (contentType.includes('application/json')) {
+    try {
+      json = await response.json();
+    } catch {
+      json = null;
+    }
+  } else {
+    // Non-JSON response (e.g. HTML error page or plain text)
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(
+        `API connection error (${response.status}): Expected JSON response but received ${contentType || 'non-JSON payload'}.`,
+      );
+    }
+  }
 
   if (!response.ok) {
-    const errorMsg = json?.error?.message || json?.message || 'API request failed';
+    const errorMsg =
+      json?.error?.message ||
+      json?.message ||
+      `API request failed with status ${response.status}`;
     throw new Error(errorMsg);
   }
 

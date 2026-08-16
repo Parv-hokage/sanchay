@@ -48,6 +48,19 @@ export async function bootstrapServer(): Promise<express.Express> {
 }
 
 export default async function handler(req: Request, res: Response) {
+  if (req.url) {
+    if (req.url.startsWith('/api?match=')) {
+      const match = req.url.substring('/api?match='.length);
+      req.url = `/api/v1/${decodeURIComponent(match)}`;
+    } else if (req.url === '/api' || req.url.startsWith('/api?')) {
+      const match = (req as any).query?.match;
+      if (match) {
+        const matchPath = Array.isArray(match) ? match.join('/') : match;
+        req.url = `/api/v1/${matchPath}`;
+      }
+    }
+  }
+
   const server = await bootstrapServer();
   return server(req, res);
 }
