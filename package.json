@@ -30,7 +30,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
+    "react-markdown": "^9.0.3",
     "reflect-metadata": "^0.2.2",
+    "remark-gfm": "^4.0.1",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"

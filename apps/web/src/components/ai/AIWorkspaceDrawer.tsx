@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { apiRequest } from '../../lib/api-client';
+import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import {
   AiChatResponse,
   Citation,
@@ -260,7 +261,11 @@ export const AIWorkspaceDrawer: React.FC<AIWorkspaceDrawerProps> = ({
                         : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-xs'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {msg.sender === MessageSender.USER ? (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    ) : (
+                      <MarkdownRenderer content={msg.content} />
+                    )}
                   </div>
 
                   {/* Citations Attached to AI Message */}
