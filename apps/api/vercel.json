@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "dist/serverless.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "dist/serverless.js"
+    }
+  ]
+}
