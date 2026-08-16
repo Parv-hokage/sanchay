@@ -4,6 +4,11 @@
   "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": "apps/web/.next",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "apps/api/dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/v1/:match*",
