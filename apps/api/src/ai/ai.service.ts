@@ -49,18 +49,69 @@ export class AiService {
     const rawMessage = dto.message.trim();
     const context = dto.context || {};
     const userId = user?.id || 'anonymous-user';
+    const conversationId = dto.conversationId || uuidv4();
 
-    // 1. Intent Detection
-    const detected = this.intentService.detectIntent(rawMessage, context.serviceId);
-    this.logger.log(`[AI Orchestrator] Intent detected: ${detected.intent} (Confidence: ${detected.confidence})`);
+    // 1. Retrieve Conversation History (Last 10 messages) & Enforce User Isolation
+    let historyMessages: { role: 'user' | 'assistant'; content: string }[] = [];
 
-    // 2. Resolve Service Capability & Action Cards
-    const resolvedCap = this.capabilityResolver.resolveCapability(
-      detected.intent,
-      detected.extractedServiceSlug || context.serviceId,
+    if (dto.conversationId) {
+      try {
+        if (user?.id) {
+          const existingConv = await this.prisma.aiConversation.findUnique({
+            where: { id: dto.conversationId },
+            include: {
+              messages: {
+                orderBy: { createdAt: 'asc' },
+                take: 10,
+              },
+            },
+          });
+
+          if (existingConv) {
+            if (existingConv.userId !== user.id) {
+              throw new ForbiddenException('Access denied to this conversation.');
+            }
+            historyMessages = existingConv.messages.map((m) => ({
+              role: (m.sender === 'USER' ? 'user' : 'assistant') as 'user' | 'assistant',
+              content: m.content,
+            }));
+          }
+        }
+      } catch (err: any) {
+        if (err instanceof ForbiddenException) throw err;
+        // In-Memory Fallback
+        const inMemConv = inMemoryConversations.get(dto.conversationId);
+        if (inMemConv) {
+          if (user?.id && inMemConv.userId !== user.id) {
+            throw new ForbiddenException('Access denied to this conversation.');
+          }
+          const inMemMsgs = inMemoryMessages.get(dto.conversationId) || [];
+          historyMessages = inMemMsgs.slice(-10).map((m: any) => ({
+            role: (m.sender === MessageSender.USER ? 'user' : 'assistant') as 'user' | 'assistant',
+            content: m.content,
+          }));
+        }
+      }
+    }
+
+    // 2. Intent Detection with Conversation History Context
+    const detected = this.intentService.detectIntent(
+      rawMessage,
+      context.serviceId,
+      historyMessages,
+    );
+    this.logger.log(
+      `[AI Orchestrator] Intent detected: ${detected.intent} (Service: ${detected.extractedServiceSlug || context.serviceId}, Confidence: ${detected.confidence})`,
     );
 
-    // 3. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational queries
+    // 3. Resolve Service Capability & Action Cards
+    const targetServiceSlug = detected.extractedServiceSlug || context.serviceId;
+    const resolvedCap = this.capabilityResolver.resolveCapability(
+      detected.intent,
+      targetServiceSlug,
+    );
+
+    // 4. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational queries
     let citations: Citation[] = [];
     let retrievedEvidence: any[] = [];
 
@@ -69,9 +120,14 @@ export class AiService {
       detected.intent === IntentType.ELIGIBILITY_CHECK;
 
     if (isInformationalQuery) {
+      const searchQuery =
+        rawMessage.length < 15 && detected.intent === IntentType.ELIGIBILITY_CHECK
+          ? `${targetServiceSlug || 'jee-main'} eligibility criteria qualification`
+          : rawMessage;
+
       const searchRes = await this.knowledgeService.searchKnowledge({
-        query: rawMessage,
-        serviceId: detected.extractedServiceSlug || context.serviceId,
+        query: searchQuery,
+        serviceId: targetServiceSlug,
         limit: 3,
       });
 
@@ -81,22 +137,27 @@ export class AiService {
       }
     }
 
-    // 4. Assemble Task-Scoped Least-Privilege Prompt Context
+    // 5. Assemble Task-Scoped Least-Privilege Prompt Context with History
+    const effectiveContext = {
+      ...context,
+      serviceId: targetServiceSlug || context.serviceId,
+    };
+
     const promptMessages = this.contextBuilder.buildPromptContext(
       rawMessage,
-      context,
+      effectiveContext,
       retrievedEvidence,
       resolvedCap ? { capability: resolvedCap.name, description: resolvedCap.description } : undefined,
+      historyMessages as any,
     );
 
-    // 5. Generate Grounded AI Response via Qwen3 Adapter
+    // 6. Generate Grounded AI Response via Qwen3 Adapter
     const aiAnswer = await this.qwen3Adapter.generateText(promptMessages);
 
-    // 6. Action Card Attachment
+    // 7. Action Card Attachment
     const actionCard: ActionCard | undefined = resolvedCap?.actionCard;
 
-    // 7. Conversation & Message Persistence
-    const conversationId = dto.conversationId || uuidv4();
+    // 8. Conversation & Message Persistence
     const messageId = uuidv4();
 
     try {
@@ -106,12 +167,13 @@ export class AiService {
           create: {
             id: conversationId,
             userId: user.id,
-            serviceId: context.serviceId,
+            serviceId: targetServiceSlug,
             title: rawMessage.substring(0, 40),
-            contextMetadata: context as any,
+            contextMetadata: effectiveContext as any,
           },
           update: {
             updatedAt: new Date(),
+            contextMetadata: effectiveContext as any,
           },
         });
 
@@ -166,7 +228,7 @@ export class AiService {
       });
     }
 
-    // 8. Record AI Audit Event
+    // 9. Record AI Audit Event
     await this.auditService.recordEvent({
       actorId: user?.id || null,
       actorType: 'AI_AGENT',

@@ -185,4 +185,81 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(response.citations.length).toBeGreaterThan(0);
     expect(response.citations[0].sourceTitle).toBe('JEE (Main) 2026 Official Syllabus');
   });
+
+  it('maintains conversation history across multiple turns with stable conversationId', async () => {
+    // 1st Turn: User asks about JEE Main eligibility
+    mockPrisma.aiConversation.findUnique.mockResolvedValueOnce(null);
+
+    const turn1 = await aiService.processChatMessage(
+      {
+        message: 'What is the eligibility for JEE Main 2026?',
+        context: { serviceId: 'jee-main' },
+      },
+      { id: 'user-citizen-1' },
+    );
+
+    expect(turn1.conversationId).toBeDefined();
+    expect(turn1.intent).toBe(IntentType.ELIGIBILITY_CHECK);
+
+    // Mock existing conversation in DB for 2nd Turn
+    mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({
+      id: turn1.conversationId,
+      userId: 'user-citizen-1',
+      serviceId: 'jee-main',
+      messages: [
+        { id: 'm1', sender: 'USER', content: 'What is the eligibility for JEE Main 2026?' },
+        { id: 'm2', sender: 'AI', content: 'Candidates who passed Class 12 in 2024, 2025, or 2026 are eligible.' },
+      ],
+    });
+
+    // 2nd Turn: Follow-up question "I am qualified?"
+    const turn2 = await aiService.processChatMessage(
+      {
+        conversationId: turn1.conversationId,
+        message: 'I am qualified?',
+      },
+      { id: 'user-citizen-1' },
+    );
+
+    expect(turn2.conversationId).toBe(turn1.conversationId);
+    expect(turn2.intent).toBe(IntentType.ELIGIBILITY_CHECK);
+    expect(turn2.content).not.toContain('Which government service');
+  });
+
+  it('resolves contextual follow-up queries ("what about age?", "what documents do I need?") to JEE context', async () => {
+    const history = [
+      { role: 'user' as const, content: 'What is JEE Main eligibility?' },
+      { role: 'assistant' as const, content: 'Candidates must have passed Class 12.' },
+    ];
+
+    // Contextual age query
+    const detectedAge = intentService.detectIntent('what about age?', undefined, history);
+    expect(detectedAge.intent).toBe(IntentType.ELIGIBILITY_CHECK);
+    expect(detectedAge.extractedServiceSlug).toBe('jee-main');
+
+    // Contextual documents query
+    const detectedDocs = intentService.detectIntent('what documents do I need?', undefined, history);
+    expect(detectedDocs.intent).toBe(IntentType.FIND_DOCUMENT);
+    expect(detectedDocs.extractedServiceSlug).toBe('jee-main');
+  });
+
+  it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {
+    // User B tries to access User A's conversation
+    mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({
+      id: 'conv-user-a',
+      userId: 'user-a',
+      serviceId: 'jee-main',
+      messages: [],
+    });
+
+    await expect(
+      aiService.processChatMessage(
+        {
+          conversationId: 'conv-user-a',
+          message: 'Show me my previous queries',
+        },
+        { id: 'user-b' },
+      ),
+    ).rejects.toThrow('Access denied to this conversation.');
+  });
 });

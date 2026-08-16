@@ -129,12 +129,37 @@ export class Qwen3Adapter implements AIProvider {
       return capResponse;
     }
 
-    if (userLower.includes('eligib') || userLower.includes('who can apply')) {
-      if (evidenceSystem.includes('JEE')) {
-        return 'Based on official National Testing Agency guidelines, candidates who passed Class 12 in 2024, 2025, or appearing in 2026 with Physics, Mathematics and one optional subject are eligible. There is no age limit.';
+    // Check all messages for prior context
+    const fullConversationText = messages.map((m) => m.content).join(' ').toLowerCase();
+
+    // Check Eligibility & Follow-Up Eligibility ("I am qualified?", "Am I eligible?", "What about age?")
+    if (
+      userLower.includes('eligib') ||
+      userLower.includes('who can apply') ||
+      userLower.includes('qualified') ||
+      userLower.includes('qualify') ||
+      userLower.includes('am i eligible') ||
+      userLower.includes('i am qualified') ||
+      userLower.includes('can i apply') ||
+      userLower.includes('what about age') ||
+      userLower.includes('what if i passed') ||
+      userLower.includes('what about pcm')
+    ) {
+      if (
+        evidenceSystem.includes('JEE') ||
+        evidenceSystem.includes('National Testing Agency') ||
+        fullConversationText.includes('jee') ||
+        fullConversationText.includes('engineering')
+      ) {
+        return 'Based on official National Testing Agency guidelines for JEE (Main) 2026, you are eligible if you have passed Class 12 in 2024, 2025, or are appearing in 2026 with Physics, Mathematics, and one optional subject (Chemistry/Biotechnology/Technical Vocational). There is no age limit. To confirm your qualification, what year did you pass (or will you pass) Class 12?';
       }
-      if (evidenceSystem.includes('Ayushman')) {
-        return 'According to official National Health Authority guidelines, families listed in SECC 2011 database under deprivation categories are eligible for up to Rs. 5 Lakh coverage per year.';
+      if (
+        evidenceSystem.includes('Ayushman') ||
+        evidenceSystem.includes('National Health Authority') ||
+        fullConversationText.includes('ayushman') ||
+        fullConversationText.includes('pmjay')
+      ) {
+        return 'According to official National Health Authority guidelines, families listed in the SECC 2011 database under targeted deprivation categories are eligible for up to Rs. 5 Lakh healthcare coverage per family per year.';
       }
       return 'You can check your eligibility directly through official government guidelines retrieved with verified citations.';
     }
@@ -163,7 +188,15 @@ export class Qwen3Adapter implements AIProvider {
       return 'I can assist you in preparing your online application using your verified Sanchay profile data. You can review all auto-filled fields before final confirmation.';
     }
 
-    if (userLower.includes('document') || userLower.includes('vault')) {
+    if (
+      userLower.includes('document') ||
+      userLower.includes('vault') ||
+      userLower.includes('what document') ||
+      userLower.includes('which document')
+    ) {
+      if (fullConversationText.includes('jee') || evidenceSystem.includes('JEE')) {
+        return 'For JEE (Main) 2026, required documents include your Class 10 Certificate (for Date of Birth verification), Class 12 Marksheet/Admit Card, Category Certificate (if applicable: EWS/OBC-NCL/SC/ST/PwD), and a recent photograph and signature.';
+      }
       return 'Your private documents are securely stored in your Sanchay Document Vault with antivirus verification and strict consent-gated access.';
     }
 
