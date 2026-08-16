@@ -18,7 +18,7 @@ export const AIButton: React.FC<AIButtonProps> = ({ context: propContext }) => {
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => openDrawer(propContext)}
-          className="flex items-center gap-2.5 px-4 py-3 bg-linear-to-r from-sanchay-navy-800 to-sanchay-navy-950 text-white rounded-full shadow-2xl hover:shadow-sanchay-gold-500/20 hover:scale-105 border border-sanchay-gold-500/30 transition-all cursor-pointer group"
+          className="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-sanchay-navy-800 via-sanchay-navy-900 to-sanchay-navy-950 text-white rounded-full shadow-2xl hover:shadow-sanchay-gold-500/30 hover:scale-105 border border-sanchay-gold-400/40 transition-all cursor-pointer group"
           aria-label="Open SANCHAY AI Assistant"
         >
           <div className="w-6 h-6 rounded-full bg-sanchay-gold-500/20 flex items-center justify-center text-sanchay-gold-400 group-hover:rotate-12 transition-transform font-bold">
