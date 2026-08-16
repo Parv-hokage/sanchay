@@ -542,6 +542,7 @@ export interface AiChatDto {
   conversationId?: string;
   message: string;
   context?: SanchayAIContext;
+  history?: { role: 'user' | 'assistant'; content: string }[];
 }
 
 export interface AiChatResponse {

@@ -79,11 +79,20 @@ export const AIWorkspaceDrawer: React.FC<AIWorkspaceDrawerProps> = ({
     setIsLoading(true);
 
     try {
+      const historyPayload = messages
+        .filter((m) => m.id !== 'welcome-1')
+        .slice(-8)
+        .map((m) => ({
+          role: m.sender === MessageSender.USER ? ('user' as const) : ('assistant' as const),
+          content: m.content,
+        }));
+
       const res = await apiRequest<AiChatResponse>('/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
           conversationId,
           message: text,
+          history: historyPayload,
           context: {
             serviceId: context?.service?.toLowerCase().replace(/[^a-z0-9]/g, '-'),
             departmentId: context?.department,

@@ -94,6 +94,14 @@ export class AiService {
       }
     }
 
+    // Client history fallback (stateless / serverless resilience)
+    if (historyMessages.length === 0 && dto.history && dto.history.length > 0) {
+      historyMessages = dto.history.slice(-10).map((h) => ({
+        role: h.role === 'user' ? 'user' : 'assistant',
+        content: h.content,
+      }));
+    }
+
     // 2. Intent Detection with Conversation History Context
     const detected = this.intentService.detectIntent(
       rawMessage,
