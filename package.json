@@ -8,7 +8,7 @@
     "dev": "pnpm --parallel --filter @sanchay/* dev",
     "dev:api": "pnpm --filter @sanchay/api dev",
     "dev:web": "pnpm --filter @sanchay/web dev",
-    "build": "pnpm --recursive build",
+    "build": "prisma generate --schema=./prisma/schema.prisma && pnpm --recursive build",
     "typecheck": "pnpm --recursive typecheck",
     "lint": "pnpm --recursive lint",
     "test": "pnpm --recursive test",
@@ -20,7 +20,20 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.4.0"
+    "@nestjs/common": "^10.4.15",
+    "@nestjs/core": "^10.4.15",
+    "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/swagger": "^8.1.1",
+    "@prisma/client": "^6.4.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
