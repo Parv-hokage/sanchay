@@ -255,3 +255,11 @@ All meaningful product, architecture, security, API, and implementation changes 
   - Registered AI navigation tools: `jee.open_section`, `jee.check_eligibility`.
   - Strict privacy boundary: Public JEE inquiries never access or leak private citizen vault documents.
 - Automated Test Suite: 76/76 passing tests across 19 test suites (including `ai.jee.spec.ts`).
+
+### Fixed
+
+- AI Response Contract Unwrapping & Rendering Bug (`apps/api/src/ai/ai.controller.ts`, `apps/web/src/components/ai/AIWorkspaceDrawer.tsx`):
+  - Standardized `AiController` to return domain payload directly to `TransformInterceptor`, eliminating double `data.data` nesting.
+  - Made `AIWorkspaceDrawer` response parsing defensive to safely unpack content across all envelope variants.
+  - Added 10s `AbortController` timeout to remote Qwen provider fetch in `Qwen3Adapter` and dedicated deterministic greeting responses for `"hi"`, `"hello"`, `"namaste"`.
+

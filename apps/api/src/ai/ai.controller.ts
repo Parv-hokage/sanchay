@@ -11,31 +11,19 @@ export class AiController {
   @Post('chat')
   @ApiOperation({ summary: 'Conversational AI endpoint with intent resolution, RAG citations, and tool actions' })
   async chat(@Body() dto: AiChatDto, @Req() req: any) {
-    const response = await this.aiService.processChatMessage(dto, req.user);
-    return {
-      success: true,
-      data: response,
-    };
+    return this.aiService.processChatMessage(dto, req.user);
   }
 
   @Get('conversations')
   @ApiOperation({ summary: 'List citizen AI conversations' })
   async listConversations(@Req() req: any) {
-    const list = await this.aiService.listConversations(req.user);
-    return {
-      success: true,
-      data: list,
-    };
+    return this.aiService.listConversations(req.user);
   }
 
   @Get('conversations/:id')
   @ApiOperation({ summary: 'Get AI conversation history with citations and action payloads' })
   async getConversation(@Param('id') id: string, @Req() req: any) {
-    const conv = await this.aiService.getConversation(id, req.user);
-    return {
-      success: true,
-      data: conv,
-    };
+    return this.aiService.getConversation(id, req.user);
   }
 
   @Post('conversations/:id/confirm')

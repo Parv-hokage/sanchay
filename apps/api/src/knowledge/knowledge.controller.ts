@@ -11,41 +11,24 @@ export class KnowledgeController {
   @Get('search')
   @ApiOperation({ summary: 'Hybrid RAG retrieval searching official government knowledge with citations' })
   async searchKnowledge(@Query() searchDto: KnowledgeSearchDto) {
-    const result = await this.knowledgeService.searchKnowledge(searchDto);
-    return {
-      success: true,
-      data: result,
-    };
+    return this.knowledgeService.searchKnowledge(searchDto);
   }
 
   @Get('sources')
   @ApiOperation({ summary: 'List registered official government knowledge sources' })
   async listSources(@Query('serviceId') serviceId?: string) {
-    const sources = await this.knowledgeService.listSources(serviceId);
-    return {
-      success: true,
-      data: sources,
-    };
+    return this.knowledgeService.listSources(serviceId);
   }
 
   @Post('sources')
   @ApiOperation({ summary: 'Register an official government source (Protected by SSRF allowlist)' })
   async registerSource(@Body() createDto: CreateSourceDto) {
-    const source = await this.knowledgeService.registerSource(createDto);
-    return {
-      success: true,
-      message: 'Official government source registered and verified.',
-      data: source,
-    };
+    return this.knowledgeService.registerSource(createDto);
   }
 
   @Post('sources/:id/sync')
   @ApiOperation({ summary: 'Trigger ingestion synchronization for an official knowledge source' })
   async syncSource(@Param('id') id: string) {
-    const result = await this.knowledgeService.syncSource(id);
-    return {
-      success: true,
-      data: result,
-    };
+    return this.knowledgeService.syncSource(id);
   }
 }

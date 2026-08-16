@@ -17,6 +17,9 @@ export class Qwen3Adapter implements AIProvider {
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -29,7 +32,10 @@ export class Qwen3Adapter implements AIProvider {
           temperature: options?.temperature ?? 0.2,
           max_tokens: options?.maxTokens ?? 1024,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Qwen3 Provider HTTP Error ${response.status}: ${await response.text()}`);
@@ -63,10 +69,22 @@ export class Qwen3Adapter implements AIProvider {
 
   private localFallbackReasoning(messages: ChatMessagePayload[]): string {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user')?.content || '';
-    const userLower = lastUserMessage.toLowerCase();
+    const userLower = lastUserMessage.trim().toLowerCase();
 
     // Check if evidence was provided in system or assistant prompt
     const evidenceSystem = messages.find((m) => m.role === 'system')?.content || '';
+
+    // Greetings
+    if (
+      userLower === 'hi' ||
+      userLower === 'hello' ||
+      userLower === 'hey' ||
+      userLower === 'namaste' ||
+      userLower.startsWith('hi ') ||
+      userLower.startsWith('hello ')
+    ) {
+      return 'Namaste! I am Sanchay AI, your unified government digital service assistant. How can I help you with official government services, examination guidelines, or benefits today?';
+    }
 
     if (userLower.includes('eligib') || userLower.includes('who can apply')) {
       if (evidenceSystem.includes('JEE')) {

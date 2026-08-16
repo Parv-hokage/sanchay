@@ -95,17 +95,25 @@ export const AIWorkspaceDrawer: React.FC<AIWorkspaceDrawerProps> = ({
         }),
       });
 
-      const data = res.data;
-      if (data.conversationId) {
+      const rawData = res.data as any;
+      const data: AiChatResponse = rawData?.data ? rawData.data : rawData;
+
+      if (data?.conversationId) {
         setConversationId(data.conversationId);
       }
 
+      const content =
+        data?.content ||
+        rawData?.content ||
+        rawData?.message ||
+        'Namaste! I am Sanchay AI. How can I help you with government services today?';
+
       const aiMsg: MessageItem = {
-        id: data.messageId || `ai-${Date.now()}`,
+        id: data?.messageId || `ai-${Date.now()}`,
         sender: MessageSender.AI,
-        content: data.content,
-        citations: data.citations,
-        actionCard: data.actionCard,
+        content,
+        citations: data?.citations || [],
+        actionCard: data?.actionCard,
         createdAt: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
