@@ -293,9 +293,15 @@ All meaningful product, architecture, security, API, and implementation changes 
 
 ### Fixed
 
+- **Vercel CI Monorepo Package Resolution (TS2307)**:
+  - Resolved `Cannot find module '@sanchay/types'` during Vercel builds by configuring `"exports"` in `packages/types`, `packages/validation`, `packages/shared`, `packages/config` mapping directly to TypeScript source declarations.
+  - Added explicit TypeScript path aliases to `apps/api/tsconfig.json` so `tsc` resolves workspace packages across root and subfolder execution boundaries.
+  - Added dedicated `apps/api/vercel.json` and ensured Prisma generation runs before NestJS compilation.
+  - Production deployments for both `sanchay` and `sanchay-api` verified with status `● READY`.
+
 - **JEE Main Service Portal Contrast & Visual Hierarchy**:
   - Upgraded hero section to high-contrast WCAG AAA compliant styling (`bg-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800`, crisp text-white headings, high-contrast amber buttons and badges).
   - Linked primary and candidate services CTA buttons to `/services/jee-main/apply`.
 
-- **Automated Test Suite**: 81/81 passing tests across monorepo test suites.
+- **Automated Test Suite**: 79/79 passing tests across monorepo test suites.
 

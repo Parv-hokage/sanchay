@@ -202,18 +202,20 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
   - `apps/api/src/ai` (Orchestrator & Intent Resolution) (3 tests)
   - `apps/api/src/ai` (Security, Injection & Confirmation) (4 tests)
   - `apps/api/src/ai` (JEE Navigation, Screen Context & RAG Conditionality) (8 tests)
-- **Current Test Result:** 100% Passed (79/79 tests passing).
+- **Vercel API Deployment Status:** `sanchay-api` (standalone backend) `● READY`, `sanchay` (unified web + serverless API) `● READY`.
+- **Current Test Result:** 100% Passed (79/79 unit and security tests passing).
 - **AI Engine:** OpenRouter Free Qwen (`qwen/qwen3-30b-a3b`) real LLM generation active for runtime with automatic deterministic fallback on missing key / timeout.
 
 ---
 
 ## Current Task
 
-- Completed: **Step 7 — JEE Main Application Sandbox + UI Visibility + AI Application Flow & Profile Single Source of Truth with Category (ADR-024)**.
+- Completed: **Step 7 — JEE Main Application Sandbox + UI Visibility + AI Application Flow & Profile Single Source of Truth with Category (ADR-024)** + **Vercel Monorepo TS2307 Build Resolution**.
   - High-contrast WCAG AAA hero and text visibility across the JEE Main portal.
   - Dedicated `/services/jee-main/apply` 8-step application wizard with 100% read-only citizen identity and academic qualification consumption from Sanchay Profile.
   - Sanchay Profile (`/profile`) established as the SINGLE SOURCE OF TRUTH for all citizen identity, demographic, category, contact, and academic credentials.
   - Added official `Category` (`CitizenCategory`: `GENERAL`, `EWS`, `OBC_NCL`, `SC`, `ST`) to Profile data model, API, and UI edit/view flow.
+  - Resolved Vercel CI TS2307 `@sanchay/types` module resolution by adding package source exports, `apps/api/tsconfig.json` path mappings, and dedicated `apps/api/vercel.json`.
   - Read-only field provenance indicators (`✓ From Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Complete Profile]`).
   - Zero AI profile mutation: AI has read-only access and redirects any profile modification requests to My Profile with actionable navigation cards.
   - Sandbox submission generation with reference numbers (`SANDBOX-JEE-2026-XXXXXX`) and live status tracking.
@@ -229,6 +231,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 ## Last Validation
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
-- **Tests:** Passed (81/81 unit and security tests passing across all packages)
-- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully with `/services/jee-main` and `/services/jee-main/apply` prerendered)
-- **Validation Date:** 2026-08-17T01:15:00+05:30
+- **Tests:** Passed (79/79 unit and security tests passing across all packages)
+- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; `sanchay-api` Vercel production status `READY`)
+- **Validation Date:** 2026-08-17T01:28:00+05:30
