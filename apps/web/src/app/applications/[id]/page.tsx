@@ -6,7 +6,7 @@ import { apiRequest } from '../../../lib/api-client';
 import { ApplicationWizard } from '../../../components/application/ApplicationWizard';
 import { ApplicationReview } from '../../../components/application/ApplicationReview';
 import { ApplicationSuccess } from '../../../components/application/ApplicationSuccess';
-import { AIButton } from '../../../components/ai/AIButton';
+import { useAI } from '../../../context/AIContext';
 
 interface ApplicationData {
   id: string;
@@ -51,6 +51,7 @@ export default function ApplicationDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
+  const { setAIContext } = useAI();
   const [application, setApplication] = useState<ApplicationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,19 @@ export default function ApplicationDetailPage({
   useEffect(() => {
     fetchApplication();
   }, [resolvedParams.id]);
+
+  useEffect(() => {
+    if (application) {
+      setAIContext({
+        department: application.service?.organization?.department?.name || 'Government Services',
+        organization: application.service?.organization?.name,
+        service: application.service?.name,
+        capability: application.capability?.name || 'Application Form',
+        workflow: 'application',
+        route: `/applications/${application.id}`,
+      });
+    }
+  }, [application, setAIContext]);
 
   const fetchApplication = async () => {
     setLoading(true);
@@ -155,13 +169,6 @@ export default function ApplicationDetailPage({
 
   return (
     <div className="max-w-4xl mx-auto pb-16 space-y-6">
-      {/* Contextual AI Assistant anchored to current application */}
-      <AIButton
-        context={{
-          service: application.service?.name,
-          capability: application.capability?.name || 'Application Form',
-        }}
-      />
 
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs text-slate-500">

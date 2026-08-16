@@ -60,23 +60,25 @@ export class AiService {
       detected.extractedServiceSlug || context.serviceId,
     );
 
-    // 3. Grounded Knowledge Retrieval (RAG)
+    // 3. Grounded Knowledge Retrieval (RAG) — Strictly conditional on informational queries
     let citations: Citation[] = [];
     let retrievedEvidence: any[] = [];
 
-    if (
+    const isInformationalQuery =
       detected.intent === IntentType.KNOWLEDGE_QUERY ||
-      detected.intent === IntentType.ELIGIBILITY_CHECK ||
-      detected.intent === IntentType.GENERAL_HELP
-    ) {
+      detected.intent === IntentType.ELIGIBILITY_CHECK;
+
+    if (isInformationalQuery) {
       const searchRes = await this.knowledgeService.searchKnowledge({
         query: rawMessage,
         serviceId: detected.extractedServiceSlug || context.serviceId,
         limit: 3,
       });
 
-      retrievedEvidence = searchRes.evidence;
-      citations = searchRes.evidence.map((e) => e.citation);
+      if (searchRes.evidence && searchRes.evidence.length > 0) {
+        retrievedEvidence = searchRes.evidence;
+        citations = searchRes.evidence.map((e) => e.citation);
+      }
     }
 
     // 4. Assemble Task-Scoped Least-Privilege Prompt Context

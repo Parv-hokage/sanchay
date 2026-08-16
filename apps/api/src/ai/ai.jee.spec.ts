@@ -143,4 +143,46 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(navResult.result.section).toBe('syllabus');
     expect(navResult.result.route).toBe('/services/jee-main?section=syllabus');
   });
+
+  it('does NOT trigger RAG or return citations for casual greetings ("hi")', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'hi',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.intent).toBe(IntentType.GENERAL_HELP);
+    expect(response.citations).toHaveLength(0);
+    expect(mockKnowledge.searchKnowledge).not.toHaveBeenCalled();
+    expect(response.content).toContain('Namaste!');
+  });
+
+  it('does NOT trigger RAG or return citations for capability questions ("what all can you do?")', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'what all can you do?',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.intent).toBe(IntentType.GENERAL_HELP);
+    expect(response.citations).toHaveLength(0);
+    expect(mockKnowledge.searchKnowledge).not.toHaveBeenCalled();
+    expect(response.content).toContain('Find and explain official government information');
+    expect(response.content).toContain('Navigate government services');
+  });
+
+  it('triggers RAG and returns verified citations for factual syllabus queries', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'What is the syllabus for JEE Main Physics?',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.intent).toBe(IntentType.KNOWLEDGE_QUERY);
+    expect(mockKnowledge.searchKnowledge).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: 'What is the syllabus for JEE Main Physics?',
+        serviceId: 'jee-main',
+      }),
+    );
+    expect(response.citations.length).toBeGreaterThan(0);
+    expect(response.citations[0].sourceTitle).toBe('JEE (Main) 2026 Official Syllabus');
+  });
 });

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { AIButton } from '../../../components/ai/AIButton';
+import { useAI } from '../../../context/AIContext';
 import { KnowledgeSearchWidget } from '../../../components/knowledge/KnowledgeSearchWidget';
 
 // ==========================================
@@ -209,6 +209,7 @@ const FAQS = [
 ];
 
 export default function JeeMainServicePortal() {
+  const { setAIContext } = useAI();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'bulletin' | 'syllabus' | 'notices' | 'papers' | 'faq' | 'candidate-services'
   >('overview');
@@ -216,6 +217,27 @@ export default function JeeMainServicePortal() {
   const [syllabusSearch, setSyllabusSearch] = useState('');
   const [noticeCategory, setNoticeCategory] = useState<string>('All');
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
+
+  useEffect(() => {
+    const tabLabels: Record<string, string> = {
+      overview: 'Overview',
+      bulletin: 'Information Bulletin',
+      syllabus: 'Syllabus',
+      notices: 'Public Notices',
+      papers: 'Question Papers & Answer Keys',
+      faq: 'Candidate FAQs',
+      'candidate-services': 'Candidate Services',
+    };
+    setAIContext({
+      department: 'Education',
+      organization: 'NTA',
+      service: 'JEE Main',
+      section: tabLabels[activeTab] || activeTab,
+      activeItem: selectedNotice?.title,
+      workflow: activeTab === 'candidate-services' ? 'application' : 'inquiry',
+      route: '/services/jee-main',
+    });
+  }, [activeTab, selectedNotice, setAIContext]);
 
   const filteredNotices =
     noticeCategory === 'All'
@@ -230,17 +252,7 @@ export default function JeeMainServicePortal() {
 
   return (
     <div className="space-y-8 pb-16 font-sans">
-      {/* Contextual AI Assistant with active section awareness */}
-      <AIButton
-        context={{
-          department: 'Ministry of Education',
-          organization: 'National Testing Agency (NTA)',
-          service: 'JEE (Main) 2026',
-          section: activeTab,
-          activeItem: selectedNotice?.title,
-          workflow: activeTab === 'candidate-services' ? 'application' : 'inquiry',
-        }}
-      />
+
 
       {/* Breadcrumb Hierarchy */}
       <nav className="flex items-center gap-2 text-xs text-slate-500">

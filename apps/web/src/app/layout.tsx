@@ -6,6 +6,7 @@ import { Sidebar } from '../components/layout/Sidebar';
 import { AIButton } from '../components/ai/AIButton';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { AuthProvider } from '../context/AuthContext';
+import { AIContextProvider } from '../context/AIContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,12 +30,14 @@ export default function RootLayout({
       <body className="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-sanchay-gold-100 selection:text-sanchay-navy-900">
         <ErrorBoundary>
           <AuthProvider>
-            <Header />
-            <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex gap-6">
-              <Sidebar />
-              <main className="flex-1 min-w-0">{children}</main>
-            </div>
-            <AIButton />
+            <AIContextProvider>
+              <Header />
+              <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex gap-6">
+                <Sidebar />
+                <main className="flex-1 min-w-0">{children}</main>
+              </div>
+              <AIButton />
+            </AIContextProvider>
           </AuthProvider>
         </ErrorBoundary>
       </body>

@@ -81,9 +81,38 @@ export class Qwen3Adapter implements AIProvider {
       userLower === 'hey' ||
       userLower === 'namaste' ||
       userLower.startsWith('hi ') ||
-      userLower.startsWith('hello ')
+      userLower.startsWith('hello ') ||
+      userLower.startsWith('namaste ')
     ) {
       return 'Namaste! I am Sanchay AI, your unified government digital service assistant. How can I help you with official government services, examination guidelines, or benefits today?';
+    }
+
+    // Capability inquiries
+    if (
+      userLower.includes('what can you do') ||
+      userLower.includes('what all can you do') ||
+      userLower.includes('capabilities') ||
+      userLower.includes('how can you help') ||
+      userLower.includes('who are you')
+    ) {
+      let capResponse = `Namaste! I am Sanchay AI, your unified government digital service assistant. I can help you:
+
+• Find and explain official government information
+• Navigate government services
+• Check eligibility criteria
+• Find notices, bulletins, documents, and updates
+• Guide you through supported applications
+• Use your verified Sanchay profile to assist with forms
+• Explain official documents and government instructions
+• Perform authorized service actions when available`;
+
+      if (evidenceSystem.includes('JEE') || evidenceSystem.includes('National Testing Agency')) {
+        capResponse += `\n\nSince you are currently in JEE (Main) 2026, I can also help you find JEE syllabus, official notices, question papers, answer keys, and supported candidate services.`;
+      } else if (evidenceSystem.includes('Ayushman') || evidenceSystem.includes('National Health Authority')) {
+        capResponse += `\n\nSince you are currently in Ayushman Bharat (PM-JAY), I can also help you check hospital empanelment, PM-JAY eligibility, and card issuance guidelines.`;
+      }
+
+      return capResponse;
     }
 
     if (userLower.includes('eligib') || userLower.includes('who can apply')) {

@@ -209,15 +209,17 @@ export const AIWorkspaceDrawer: React.FC<AIWorkspaceDrawerProps> = ({
 
         {/* Dynamic Citizen Context Banner */}
         <div className="px-4 py-2 bg-sanchay-navy-50/90 border-b border-sanchay-navy-100/80 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-sanchay-navy-900 font-medium truncate">
-            <span className="text-xs">🏛️</span>
-            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Context:</span>
-            <span className="text-xs font-bold text-sanchay-navy-800 truncate">
-              {context?.service || context?.department || 'National Service Directory'}
+          <div className="flex items-center gap-2 text-sanchay-navy-900 font-medium truncate min-w-0">
+            <span className="text-xs shrink-0">🏛️</span>
+            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider shrink-0">Context:</span>
+            <span className="text-xs font-bold text-sanchay-navy-800 truncate" title={[context?.department, context?.organization, context?.service, context?.section].filter(Boolean).join(' → ')}>
+              {[context?.department, context?.organization, context?.service, context?.section]
+                .filter(Boolean)
+                .join(' → ') || 'National Service Directory'}
             </span>
           </div>
           {context?.capability && (
-            <span className="text-[10px] bg-white px-2 py-0.5 rounded font-mono text-slate-600 border border-slate-200 truncate shrink-0">
+            <span className="text-[10px] bg-white px-2 py-0.5 rounded font-mono text-slate-600 border border-slate-200 truncate shrink-0 ml-2">
               {context.capability}
             </span>
           )}

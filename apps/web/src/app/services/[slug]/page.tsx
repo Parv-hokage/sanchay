@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { apiRequest } from '../../../lib/api-client';
-import { AIButton } from '../../../components/ai/AIButton';
+import { useAI } from '../../../context/AIContext';
 import { KnowledgeSearchWidget } from '../../../components/knowledge/KnowledgeSearchWidget';
 
 interface ServiceCapabilityRequirement {
@@ -57,6 +57,7 @@ export default function ServiceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = use(params);
+  const { setAIContext } = useAI();
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +66,18 @@ export default function ServiceDetailPage({
   useEffect(() => {
     fetchServiceDetail();
   }, [resolvedParams.slug]);
+
+  useEffect(() => {
+    if (service) {
+      setAIContext({
+        department: service.organization.department.name,
+        organization: service.organization.name,
+        service: service.name,
+        capability: selectedCapability?.name,
+        route: `/services/${service.slug}`,
+      });
+    }
+  }, [service, selectedCapability, setAIContext]);
 
   const fetchServiceDetail = async () => {
     setLoading(true);
@@ -128,15 +141,7 @@ export default function ServiceDetailPage({
 
   return (
     <div className="space-y-8 pb-16">
-      {/* Contextual AI Assistant anchored to this service */}
-      <AIButton
-        context={{
-          department: service.organization.department.name,
-          organization: service.organization.name,
-          service: service.name,
-          capability: selectedCapability?.name,
-        }}
-      />
+
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-slate-500">
