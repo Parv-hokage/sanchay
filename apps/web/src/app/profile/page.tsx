@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [editFullName, setEditFullName] = useState('');
   const [editDob, setEditDob] = useState('');
   const [editGender, setEditGender] = useState('MALE');
+  const [editCategory, setEditCategory] = useState<string>('');
   const [editLang, setEditLang] = useState('en');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export default function ProfilePage() {
       setEditFullName(profile.fullName || '');
       setEditDob(profile.dateOfBirth || '');
       setEditGender(profile.gender || 'MALE');
+      setEditCategory(profile.category || '');
       setEditLang(profile.preferredLanguage || 'en');
     }
   }, [profile]);
@@ -81,6 +83,7 @@ export default function ProfilePage() {
           fullName: editFullName,
           dateOfBirth: editDob || undefined,
           gender: editGender,
+          category: editCategory || null,
           preferredLanguage: editLang,
         }),
       });
@@ -327,6 +330,25 @@ export default function ProfilePage() {
               </div>
 
               <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-sanchay-navy-500"
+                >
+                  <option value="">Select Category (Optional)</option>
+                  <option value="GENERAL">General / Unreserved</option>
+                  <option value="EWS">EWS</option>
+                  <option value="OBC_NCL">OBC-NCL</option>
+                  <option value="SC">SC</option>
+                  <option value="ST">ST</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Used by government services for official reservation and fee concessions.
+                </p>
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Preferred Language</label>
                 <select
                   value={editLang}
@@ -368,6 +390,22 @@ export default function ProfilePage() {
               <div>
                 <span className="block text-xs text-slate-400 font-medium">Gender</span>
                 <span className="text-sm font-semibold text-slate-800">{profile?.gender || 'Not specified'}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-slate-400 font-medium">Category</span>
+                <span className="text-sm font-semibold text-slate-800">
+                  {profile?.category === 'GENERAL'
+                    ? 'General / Unreserved'
+                    : profile?.category === 'EWS'
+                    ? 'EWS'
+                    : profile?.category === 'OBC_NCL'
+                    ? 'OBC-NCL'
+                    : profile?.category === 'SC'
+                    ? 'SC'
+                    : profile?.category === 'ST'
+                    ? 'ST'
+                    : 'Not specified'}
+                </span>
               </div>
               <div>
                 <span className="block text-xs text-slate-400 font-medium">Language Preference</span>

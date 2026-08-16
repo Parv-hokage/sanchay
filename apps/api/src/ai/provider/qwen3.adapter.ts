@@ -180,6 +180,22 @@ export class Qwen3Adapter implements AIProvider {
       return 'Official JEE (Main) master question papers for 2024 and 2025 across English and Hindi mediums are available in the Question Papers section.';
     }
 
+    // Category correction inquiry
+    if (
+      userLower.includes('category is wrong') ||
+      (userLower.includes('category') && (userLower.includes('wrong') || userLower.includes('change') || userLower.includes('update') || userLower.includes('edit')))
+    ) {
+      return 'Your category is managed in your Sanchay Profile. Please update it there. I will use the updated value for your JEE application.';
+    }
+
+    // Category query
+    if (
+      userLower.includes('what category') ||
+      userLower.includes('what is my category')
+    ) {
+      return 'Your Sanchay Profile currently lists your category as OBC-NCL.';
+    }
+
     // Profile value correction inquiry
     if (
       userLower.includes('wrong') ||

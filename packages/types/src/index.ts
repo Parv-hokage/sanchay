@@ -42,12 +42,21 @@ export interface IdentityLink {
   createdAt: Date;
 }
 
+export enum CitizenCategory {
+  GENERAL = 'GENERAL',
+  EWS = 'EWS',
+  OBC_NCL = 'OBC_NCL',
+  SC = 'SC',
+  ST = 'ST',
+}
+
 export interface CitizenProfile {
   id: string;
   userId: string;
   fullName: string;
   dateOfBirth?: string | null;
   gender?: string | null;
+  category?: CitizenCategory | null;
   preferredLanguage: string;
   createdAt: Date;
   updatedAt: Date;
@@ -126,6 +135,7 @@ export interface UpdateProfileDto {
   fullName?: string;
   dateOfBirth?: string;
   gender?: string;
+  category?: CitizenCategory | null;
   preferredLanguage?: string;
 }
 

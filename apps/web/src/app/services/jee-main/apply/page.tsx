@@ -65,7 +65,19 @@ export default function JeeMainApplyPage() {
     fullName: profile?.fullName || 'Parv Mittal',
     dateOfBirth: profile?.dateOfBirth || '2006-08-15',
     gender: profile?.gender || 'Male',
-    category: 'General (Unreserved)',
+    category: profile?.category
+      ? profile.category === 'GENERAL'
+        ? 'General / Unreserved'
+        : profile.category === 'EWS'
+        ? 'EWS'
+        : profile.category === 'OBC_NCL'
+        ? 'OBC-NCL'
+        : profile.category === 'SC'
+        ? 'SC'
+        : profile.category === 'ST'
+        ? 'ST'
+        : profile.category
+      : null,
     fatherName: 'Rajesh Mittal',
     motherName: 'Sunita Mittal',
     nationality: 'Indian',
@@ -296,13 +308,30 @@ export default function JeeMainApplyPage() {
               </span>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-              <span className="block text-xs font-bold text-slate-500 mb-1">Category</span>
-              <span className="text-sm font-black text-slate-900">{citizenData.category}</span>
-              <span className="text-[10px] text-emerald-700 font-bold block mt-1.5">
-                ✓ Verified from Sanchay Profile
-              </span>
-            </div>
+            {citizenData.category ? (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                <span className="block text-xs font-bold text-slate-500 mb-1">Category</span>
+                <span className="text-sm font-black text-slate-900">{citizenData.category}</span>
+                <span className="text-[10px] text-emerald-700 font-bold block mt-1.5">
+                  ✓ From Sanchay Profile
+                </span>
+              </div>
+            ) : (
+              <div className="p-4 bg-amber-50/50 border border-amber-300 rounded-2xl">
+                <span className="block text-xs font-bold text-slate-500 mb-1">Category</span>
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <span className="text-xs font-bold text-amber-800">
+                    ⚠ Missing from Sanchay Profile
+                  </span>
+                  <Link
+                    href="/profile"
+                    className="text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 px-2.5 py-1 rounded-lg shrink-0"
+                  >
+                    Complete Profile ↗
+                  </Link>
+                </div>
+              </div>
+            )}
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
               <span className="block text-xs font-bold text-slate-500 mb-1">Father&apos;s / Guardian&apos;s Name</span>
@@ -804,8 +833,19 @@ export default function JeeMainApplyPage() {
               </div>
               <div>
                 <span className="text-slate-500 block">Category</span>
-                <span className="font-bold text-slate-900">{citizenData.category}</span>
-                <span className="text-[10px] text-emerald-700 block">✓ Sanchay Profile</span>
+                {citizenData.category ? (
+                  <>
+                    <span className="font-bold text-slate-900">{citizenData.category}</span>
+                    <span className="text-[10px] text-emerald-700 block">✓ Sanchay Profile</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-amber-800">⚠ Missing from Sanchay Profile</span>
+                    <Link href="/profile" className="text-[10px] text-amber-700 underline block font-bold">
+                      Complete Profile ↗
+                    </Link>
+                  </>
+                )}
               </div>
               <div>
                 <span className="text-slate-500 block">Father&apos;s Name</span>

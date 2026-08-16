@@ -291,6 +291,26 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(response.content).toContain('Class 12');
   });
 
+  it('answers Category inquiry "What category do I have?" directly from profile without RAG', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'What category do I have?',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.content).toContain('OBC-NCL');
+  });
+
+  it('directs citizen to My Profile when user reports "My category is wrong"', async () => {
+    const response = await aiService.processChatMessage({
+      message: 'My category is wrong',
+      context: { serviceId: 'jee-main' },
+    });
+
+    expect(response.actionCard).toBeDefined();
+    expect(response.actionCard?.title).toBe('Open My Profile');
+    expect((response.actionCard?.payload as any)?.route).toBe('/profile');
+  });
+
   it('enforces cross-user isolation and rejects unauthorized conversation access', async () => {
     // User B tries to access User A's conversation
     mockPrisma.aiConversation.findUnique.mockResolvedValueOnce({

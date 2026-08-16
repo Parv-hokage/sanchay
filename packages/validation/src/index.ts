@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AddressType, ContactType, IdentityProviderType } from '@sanchay/types';
+import { AddressType, CitizenCategory, ContactType, IdentityProviderType } from '@sanchay/types';
 
 /**
  * UUID v4 / Sanchay UID Validator
@@ -54,6 +54,7 @@ export const UpdateProfileSchema = z.object({
   fullName: SafeString(100).optional(),
   dateOfBirth: DateOfBirthSchema.optional(),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+  category: z.nativeEnum(CitizenCategory).nullable().optional(),
   preferredLanguage: z.string().trim().min(2).max(10).optional(),
 });
 

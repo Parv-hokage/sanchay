@@ -88,6 +88,7 @@ export class MeService {
         fullName: dto.fullName !== undefined ? dto.fullName : existing.fullName,
         dateOfBirth: dto.dateOfBirth !== undefined ? dto.dateOfBirth : existing.dateOfBirth,
         gender: dto.gender !== undefined ? dto.gender : existing.gender,
+        category: dto.category !== undefined ? (dto.category as any) : existing.category,
         preferredLanguage: dto.preferredLanguage !== undefined ? dto.preferredLanguage : existing.preferredLanguage,
       },
     });

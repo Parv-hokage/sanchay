@@ -276,8 +276,9 @@ All meaningful product, architecture, security, API, and implementation changes 
 
 - **JEE Main Application Sandbox Wizard (`apps/web/src/app/services/jee-main/apply/page.tsx`)**:
   - Full 8-step wizard: Personal Details, Contact & Address, Academic Details (Class 10 & 12), Examination Details (Paper & Session Choice), City & Centre Preferences (4 Choices), Documents & Proofs Upload simulation, Comprehensive Citizen Review Sheet, and Consequential Confirmation.
-  - **Single Source of Truth Architecture (ADR-024)**: Citizen identity, personal, and academic data is strictly **READ-ONLY** within the application form. Sanchay Profile (`/profile`) is the single source of truth for citizen data.
-  - Visible provenance indicators (`✓ Verified from Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Open My Profile]`).
+  - **Single Source of Truth Architecture (ADR-024)**: Citizen identity, personal, category, and academic data is strictly **READ-ONLY** within the application form. Sanchay Profile (`/profile`) is the single source of truth for citizen data.
+  - **Category Integration**: Added `CitizenCategory` (`GENERAL`, `EWS`, `OBC_NCL`, `SC`, `ST`) to Profile data model, API, and UI edit/view flow. Category is consumed dynamically by the JEE application.
+  - Visible provenance indicators (`✓ From Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Complete Profile]`).
   - Strict zero-trust consequential citizen confirmation guardrail before sandbox submission.
   - Generates deterministic reference numbers (`SANDBOX-JEE-2026-XXXXXX`) with live status dashboard tracking.
   - Prominently labeled with sandbox simulation indicators.

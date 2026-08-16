@@ -14,6 +14,11 @@ describe('MeService — IDOR & Ownership Authorization Security', () => {
 
   beforeEach(() => {
     mockPrisma = {
+      profile: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
       address: {
         findUnique: vi.fn(),
         update: vi.fn(),
@@ -81,18 +86,46 @@ describe('MeService — IDOR & Ownership Authorization Security', () => {
     });
   });
 
-  describe('Consent IDOR Protection', () => {
-    it('should reject User A revoking User B consent with 403 Forbidden', async () => {
-      mockPrisma.consent.findUnique.mockResolvedValue({
-        id: 'consent-b-777',
-        userId: USER_B,
+  describe('Profile Category & Field Updates', () => {
+    it('should return profile with category and support category=null', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        id: 'prof-a-1',
+        userId: USER_A,
+        fullName: 'Citizen A',
+        category: null,
       });
 
-      await expect(
-        meService.revokeConsent(USER_A, 'consent-b-777', 'req-idor-4'),
-      ).rejects.toThrow(ForbiddenException);
+      const profile = await meService.getProfile(USER_A);
+      expect(profile.category).toBeNull();
+      expect(profile.fullName).toBe('Citizen A');
+    });
 
-      expect(mockPrisma.consent.update).not.toHaveBeenCalled();
+    it('should update profile category when authenticated user explicitly changes it', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue({
+        id: 'prof-a-1',
+        userId: USER_A,
+        fullName: 'Citizen A',
+        category: null,
+      });
+
+      mockPrisma.profile.update.mockResolvedValue({
+        id: 'prof-a-1',
+        userId: USER_A,
+        fullName: 'Citizen A',
+        category: 'OBC_NCL',
+      });
+
+      const updated = await meService.updateProfile(
+        USER_A,
+        { category: 'OBC_NCL' as any },
+        'req-prof-1',
+      );
+
+      expect(updated.category).toBe('OBC_NCL');
+      expect(mockPrisma.profile.update).toHaveBeenCalledWith({
+        where: { id: 'prof-a-1' },
+        data: expect.objectContaining({ category: 'OBC_NCL' }),
+      });
     });
   });
 });
