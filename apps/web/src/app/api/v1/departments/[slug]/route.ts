@@ -61,9 +61,9 @@ const DEPARTMENTS: Record<string, any> = {
 
 export async function GET(
   _req: NextRequest,
-  context: { params: Promise<{ slug: string }> },
+  props: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await context.params;
+  const { slug } = await props.params;
   const dept = DEPARTMENTS[slug] || DEPARTMENTS['education'];
 
   return NextResponse.json({

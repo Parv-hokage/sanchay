@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
+  props: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await context.params;
+  const { id } = await props.params;
   const referenceCode = `SANDBOX-JEE-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
   return NextResponse.json({

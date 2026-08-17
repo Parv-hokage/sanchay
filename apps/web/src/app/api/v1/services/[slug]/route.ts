@@ -40,9 +40,9 @@ const SERVICES: Record<string, any> = {
 
 export async function GET(
   _req: NextRequest,
-  context: { params: Promise<{ slug: string }> },
+  props: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await context.params;
+  const { slug } = await props.params;
   const srv = SERVICES[slug] || SERVICES['jee-main'];
 
   return NextResponse.json({
