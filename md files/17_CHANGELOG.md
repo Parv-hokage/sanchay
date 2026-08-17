@@ -457,5 +457,29 @@ All meaningful product, architecture, security, API, and implementation changes 
 - **Build**: `pnpm build` — Clean production build with self-contained serverless bundle.
 - **Quality Gates**: All automated unit, ownership, and security tests passing.
 
+---
+
+## [0.8.7] — 2026-08-17 — Emergency Phase E5: Profile & Citizen Data Integrity
+
+### Audited & Verified
+
+- **Profile Single Source of Truth**:
+  - Validated that citizen profile owns core identity fields (`fullName`, `dateOfBirth`, `gender`, `category`, `contact`, `addresses`).
+  - Verified that application forms (e.g. JEE Main application sandbox) consume profile fields strictly in read-only mode with `✓ From Sanchay Profile` badges and links to `/me/profile` for modifications.
+- **Canonical Enums & Validation**:
+  - Enforced strict canonical enums for Category (`GENERAL`, `OBC_NCL`, `SC`, `ST`, `EWS`) and Gender (`MALE`, `FEMALE`, `TRANSGENDER`).
+- **AI Profile Mutation Protection**:
+  - Verified that AI assistant reads authorized profile context for conversational assistance but is strictly prohibited from mutating profile data or bypassing validation.
+- **Continuous Emergency Logging**:
+  - Updated permanent continuous log in `emergency phase/EMERGENCY_EXECUTION_LOG.md` (Log Entries 6 and 7).
+
+### Tested & Verified
+
+- **Typecheck**: `pnpm typecheck` — 0 errors across 9 workspace projects.
+- **Tests**: `pnpm test` — 95/95 tests passing across 18 test suites (100%).
+- **Build**: `pnpm build` — Clean production build with self-contained serverless bundle.
+- **Live Production Verification**: Live production endpoints verified returning HTTP 200 on `https://sanchay-three.vercel.app`.
+
+
 
 
