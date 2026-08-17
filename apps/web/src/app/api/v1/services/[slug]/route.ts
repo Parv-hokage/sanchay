@@ -39,17 +39,38 @@ const SERVICES: Record<string, any> = {
 };
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   props: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await props.params;
-  const srv = SERVICES[slug] || SERVICES['jee-main'];
+  try {
+    let slug = 'jee-main';
+    if (props && props.params) {
+      const resolved = await props.params;
+      if (resolved && resolved.slug) {
+        slug = resolved.slug;
+      }
+    }
+    if (!slug || slug === '[slug]') {
+      const parts = new URL(req.url).pathname.split('/');
+      slug = parts[parts.length - 1] || 'jee-main';
+    }
 
-  return NextResponse.json({
-    data: srv,
-    meta: {
-      requestId: 'srv-detail-' + Math.random().toString(36).substring(2, 9),
-      timestamp: new Date().toISOString(),
-    },
-  });
+    const srv = SERVICES[slug] || SERVICES['jee-main'];
+
+    return NextResponse.json({
+      data: srv,
+      meta: {
+        requestId: 'srv-detail-' + Math.random().toString(36).substring(2, 9),
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      {
+        data: SERVICES['jee-main'],
+        error: { message: err?.message || 'Fallback to default service' },
+      },
+      { status: 200 },
+    );
+  }
 }

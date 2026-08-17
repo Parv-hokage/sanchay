@@ -60,17 +60,38 @@ const DEPARTMENTS: Record<string, any> = {
 };
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   props: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await props.params;
-  const dept = DEPARTMENTS[slug] || DEPARTMENTS['education'];
+  try {
+    let slug = 'education';
+    if (props && props.params) {
+      const resolved = await props.params;
+      if (resolved && resolved.slug) {
+        slug = resolved.slug;
+      }
+    }
+    if (!slug || slug === '[slug]') {
+      const parts = new URL(req.url).pathname.split('/');
+      slug = parts[parts.length - 1] || 'education';
+    }
 
-  return NextResponse.json({
-    data: dept,
-    meta: {
-      requestId: 'dept-detail-' + Math.random().toString(36).substring(2, 9),
-      timestamp: new Date().toISOString(),
-    },
-  });
+    const dept = DEPARTMENTS[slug] || DEPARTMENTS['education'];
+
+    return NextResponse.json({
+      data: dept,
+      meta: {
+        requestId: 'dept-detail-' + Math.random().toString(36).substring(2, 9),
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      {
+        data: DEPARTMENTS['education'],
+        error: { message: err?.message || 'Fallback to default department' },
+      },
+      { status: 200 },
+    );
+  }
 }
