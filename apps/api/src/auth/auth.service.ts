@@ -38,9 +38,10 @@ const DEFAULT_CITIZEN_USER = {
   profile: {
     id: 'prof-default-001',
     userId: 'user-default-001',
-    fullName: 'Rahul Sharma',
-    dateOfBirth: new Date('2002-05-14'),
+    fullName: 'Parv Mittal',
+    dateOfBirth: new Date('2006-08-15'),
     gender: 'Male',
+    category: 'OBC_NCL',
     preferredLanguage: 'en',
     createdAt: new Date(),
     updatedAt: new Date(),
