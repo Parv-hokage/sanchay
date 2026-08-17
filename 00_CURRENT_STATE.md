@@ -211,16 +211,16 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Emergency Phase E3 — Authentication & Session Stability (ADR-028)**.
-  - **Objective**: Stabilize and verify the end-to-end authentication and session layer across local and production environments following E2 permanent serverless bundling.
-  - **Authentication Architecture**:
-    1. Passwordless OTP challenge initiation (`POST /api/v1/auth/login`) with audit logging.
-    2. Challenge verification (`POST /api/v1/auth/verify`) generating cryptographic stateless tokens with 7-day expiration and DB/in-memory session backing.
-    3. Session inspection (`GET /api/v1/auth/session`) extracting identity context via `AuthGuard` and `CurrentUser` decorator.
-    4. Session revocation (`POST /api/v1/auth/logout`) invalidating active sessions with full audit trail.
-    5. Strict authorization enforcement preventing cross-user data access (`403 Forbidden` IDOR protection in `MeService`, `ApplicationService`, `DocumentService`).
-    6. Structured JSON error envelopes for invalid credentials (401), missing tokens (401), expired sessions (401), and malformed requests (400).
-    7. Verified zero exposure of secrets, tokens, or personal identifiers in error responses or logs.
+- Completed: **Emergency Phase E4 — Database & API Data Stability (ADR-029)**.
+  - **Objective**: Verify and stabilize the database schema, Prisma connection lifecycle, transaction integrity, user ownership binding, cross-user isolation, and error handling.
+  - **Database & Data Architecture**:
+    1. PostgreSQL relational and vector store with 28 Prisma models across Identity, Profile, Consent, Catalog, Applications, Documents, Knowledge & AI, and System domains.
+    2. Serverless-resilient connection handling in `PrismaService` preventing cold-start crashes.
+    3. Atomic transaction execution for multi-table writes (`application.create` with nested field and event generation).
+    4. Strict IDOR protection and server-side authenticated identity binding across `MeService`, `ApplicationService`, and `DocumentService`.
+    5. Zero SQLite usage in production code paths.
+    6. Safe structured JSON error envelopes in `GlobalHttpExceptionFilter` preventing SQL, credential, or stack trace leaks.
+    7. Single continuous emergency execution log established in `emergency phase/EMERGENCY_EXECUTION_LOG.md`.
 
 ---
 
@@ -235,5 +235,5 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
-- **Authentication & Session Stability:** Passed (Login, verification, session validation, logout, and IDOR protection verified)
-- **Validation Date:** 2026-08-17T17:00:00+05:30
+- **Database & API Data Stability:** Passed (Prisma, transactions, ownership isolation, error safety verified)
+- **Validation Date:** 2026-08-17T17:13:00+05:30
