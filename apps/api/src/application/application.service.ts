@@ -363,7 +363,7 @@ export class ApplicationService {
       // In-Memory Fallback Profile
       profile = {
         fullName: 'Rahul Sharma',
-        gender: 'Male',
+        gender: 'MALE',
         dateOfBirth: new Date('2002-05-14'),
       };
       address = {
@@ -386,6 +386,9 @@ export class ApplicationService {
     }
     if (profile?.gender) {
       candidateData['gender'] = { value: profile.gender, source: FieldSource.PROFILE };
+    }
+    if (profile?.category) {
+      candidateData['category'] = { value: profile.category, source: FieldSource.PROFILE };
     }
     if (profile?.dateOfBirth) {
       const dobStr = new Date(profile.dateOfBirth).toISOString().split('T')[0];

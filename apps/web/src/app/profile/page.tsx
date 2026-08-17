@@ -47,8 +47,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setEditFullName(profile.fullName || '');
-      setEditDob(profile.dateOfBirth || '');
-      setEditGender(profile.gender || 'MALE');
+      setEditDob(profile.dateOfBirth ? (typeof profile.dateOfBirth === 'string' ? profile.dateOfBirth.split('T')[0] : new Date(profile.dateOfBirth).toISOString().split('T')[0]) : '');
+      const rawGender = (profile.gender || 'MALE').toUpperCase();
+      setEditGender(rawGender === 'FEMALE' ? 'FEMALE' : rawGender === 'OTHER' ? 'OTHER' : 'MALE');
       setEditCategory(profile.category || '');
       setEditLang(profile.preferredLanguage || 'en');
     }
@@ -77,21 +78,30 @@ export default function ProfilePage() {
     setSavingProfile(true);
     setProfileMsg(null);
     try {
+      const payload: Record<string, any> = {};
+      if (editFullName && editFullName !== profile?.fullName) payload.fullName = editFullName;
+      if (editDob !== (profile?.dateOfBirth || '')) payload.dateOfBirth = editDob || undefined;
+      if (editGender !== (profile?.gender || 'MALE')) payload.gender = editGender;
+      if (editCategory !== (profile?.category || '')) payload.category = editCategory || null;
+      if (editLang !== (profile?.preferredLanguage || 'en')) payload.preferredLanguage = editLang;
+
+      const finalPayload = Object.keys(payload).length > 0 ? payload : {
+        fullName: editFullName,
+        dateOfBirth: editDob || undefined,
+        gender: editGender,
+        category: editCategory || null,
+        preferredLanguage: editLang,
+      };
+
       await apiRequest('/me/profile', {
         method: 'PATCH',
-        body: JSON.stringify({
-          fullName: editFullName,
-          dateOfBirth: editDob || undefined,
-          gender: editGender,
-          category: editCategory || null,
-          preferredLanguage: editLang,
-        }),
+        body: JSON.stringify(finalPayload),
       });
       await refreshProfile();
-      setProfileMsg('Profile updated successfully!');
+      setProfileMsg('✓ Profile updated successfully!');
       setIsEditingProfile(false);
     } catch (err: any) {
-      setProfileMsg('Error: ' + err.message);
+      setProfileMsg('Update failed: ' + (err.message || 'Validation error'));
     } finally {
       setSavingProfile(false);
     }
@@ -216,7 +226,13 @@ export default function ProfilePage() {
       </div>
 
       {profileMsg && (
-        <div className="mb-6 p-4 rounded-xl text-xs bg-sanchay-emerald-50 text-sanchay-emerald-800 border border-sanchay-emerald-200">
+        <div
+          className={`mb-6 p-4 rounded-xl text-xs border ${
+            profileMsg.includes('failed') || profileMsg.includes('Error') || profileMsg.includes('Invalid')
+              ? 'bg-red-50 text-red-800 border-red-200'
+              : 'bg-sanchay-emerald-50 text-sanchay-emerald-800 border-sanchay-emerald-200'
+          }`}
+        >
           {profileMsg}
         </div>
       )}
@@ -389,7 +405,15 @@ export default function ProfilePage() {
               </div>
               <div>
                 <span className="block text-xs text-slate-400 font-medium">Gender</span>
-                <span className="text-sm font-semibold text-slate-800">{profile?.gender || 'Not specified'}</span>
+                <span className="text-sm font-semibold text-slate-800">
+                  {profile?.gender === 'MALE'
+                    ? 'Male'
+                    : profile?.gender === 'FEMALE'
+                    ? 'Female'
+                    : profile?.gender === 'OTHER'
+                    ? 'Other'
+                    : profile?.gender || 'Not specified'}
+                </span>
               </div>
               <div>
                 <span className="block text-xs text-slate-400 font-medium">Category</span>

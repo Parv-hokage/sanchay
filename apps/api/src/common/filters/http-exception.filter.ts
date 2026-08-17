@@ -10,6 +10,8 @@ import { Request, Response } from 'express';
 import { ApiErrorResponse, AppErrorCode } from '@sanchay/shared';
 import { REQUEST_ID_HEADER } from '../middleware/request-id.middleware';
 
+import { ZodError } from 'zod';
+
 @Catch()
 export class GlobalHttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalHttpExceptionFilter.name);
@@ -27,7 +29,25 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     let message = 'An unexpected internal server error occurred.';
     let details: Record<string, unknown> | null = null;
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof ZodError || (exception as Error)?.name === 'ZodError') {
+      const zodErr = exception as ZodError;
+      status = HttpStatus.BAD_REQUEST;
+      code = AppErrorCode.VALIDATION_ERROR;
+      const formattedErrors = zodErr.errors
+        .map((err) => {
+          const fieldPath = err.path.join('.') || 'field';
+          return `${fieldPath}: ${err.message}`;
+        })
+        .join('; ');
+      message = `Validation failed: ${formattedErrors}`;
+      details = {
+        validationErrors: zodErr.errors.map((err) => ({
+          field: err.path.join('.'),
+          message: err.message,
+          code: err.code,
+        })),
+      };
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
 

@@ -16,7 +16,7 @@ export async function GET(
       fields: [
         { key: 'fullName', label: 'Candidate Full Name', value: 'Parv Mittal', readOnly: true, source: 'PROFILE' },
         { key: 'dateOfBirth', label: 'Date of Birth', value: '2006-08-15', readOnly: true, source: 'PROFILE' },
-        { key: 'gender', label: 'Gender', value: 'Male', readOnly: true, source: 'PROFILE' },
+        { key: 'gender', label: 'Gender', value: 'MALE', readOnly: true, source: 'PROFILE' },
         { key: 'category', label: 'Category', value: 'OBC_NCL', readOnly: true, source: 'PROFILE' },
         { key: 'passingYear', label: 'Class 12 Passing Year', value: '2025', readOnly: true, source: 'PROFILE' },
         { key: 'appliedSession', label: 'Examination Session', value: 'Session 1 (January 2026)', readOnly: false, source: 'USER' },

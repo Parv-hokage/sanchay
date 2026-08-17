@@ -182,14 +182,15 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Testing Status
 
-- **Unit & Security Tests:** **79 tests across 19 test suites — ALL PASSING (100%)**.
+- **Unit & Security Tests:** **95 tests across 18 test suites — ALL PASSING (100%)**.
   - `packages/config` (2 tests)
-  - `packages/validation` (7 tests)
+  - `packages/validation` (12 tests — including Gender and Category enum validation & normalization)
   - `packages/shared` (1 test)
   - `apps/api/src/health` (2 tests)
   - `apps/api/src/auth` (7 tests)
-  - `apps/api/src/me` (5 tests)
-  - `apps/api/src/me` (Ownership IDOR) (4 tests)
+  - `apps/api/src/me` (MeService profile & addresses) (5 tests)
+  - `apps/api/src/me` (Ownership IDOR) (5 tests)
+  - `apps/api/src/me` (Category, Gender & Profile Data Flow) (7 tests)
   - `apps/api/src/audit` (1 test)
   - `apps/api/src/catalog` (5 tests)
   - `apps/api/src/catalog` (Public Safety) (1 test)
@@ -201,24 +202,23 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
   - `apps/api/src/knowledge` (SSRF & Domain Security) (6 tests)
   - `apps/api/src/ai` (Orchestrator & Intent Resolution) (3 tests)
   - `apps/api/src/ai` (Security, Injection & Confirmation) (4 tests)
-  - `apps/api/src/ai` (JEE Navigation, Screen Context & RAG Conditionality) (8 tests)
+  - `apps/api/src/ai` (JEE Navigation, Screen Context & RAG Conditionality) (23 tests)
 - **Vercel API Deployment Status:** `sanchay-api` (standalone backend) `● READY`, `sanchay` (unified web + serverless API) `● READY`.
-- **Current Test Result:** 100% Passed (79/79 unit and security tests passing).
+- **Current Test Result:** 100% Passed (95/95 unit and security tests passing).
 - **AI Engine:** OpenRouter Free Qwen (`qwen/qwen3-30b-a3b`) real LLM generation active for runtime with automatic deterministic fallback on missing key / timeout.
 
 ---
 
 ## Current Task
 
-- Completed: **Step 7 — JEE Main Application Sandbox + UI Visibility + AI Application Flow & Profile Single Source of Truth with Category (ADR-024)** + **Vercel Monorepo TS2307 Build Resolution**.
-  - High-contrast WCAG AAA hero and text visibility across the JEE Main portal.
-  - Dedicated `/services/jee-main/apply` 8-step application wizard with 100% read-only citizen identity and academic qualification consumption from Sanchay Profile.
-  - Sanchay Profile (`/profile`) established as the SINGLE SOURCE OF TRUTH for all citizen identity, demographic, category, contact, and academic credentials.
-  - Added official `Category` (`CitizenCategory`: `GENERAL`, `EWS`, `OBC_NCL`, `SC`, `ST`) to Profile data model, API, and UI edit/view flow.
-  - Resolved Vercel CI TS2307 `@sanchay/types` module resolution by adding package source exports, `apps/api/tsconfig.json` path mappings, and dedicated `apps/api/vercel.json`.
-  - Read-only field provenance indicators (`✓ From Sanchay Profile`, `⚠ Missing from Sanchay Profile` $\rightarrow$ `[Complete Profile]`).
-  - Zero AI profile mutation: AI has read-only access and redirects any profile modification requests to My Profile with actionable navigation cards.
-  - Sandbox submission generation with reference numbers (`SANDBOX-JEE-2026-XXXXXX`) and live status tracking.
+- Completed: **Fix Profile PATCH Zod Enum Validation & Sovereign Profile Alignment (ADR-025)**.
+  - Diagnosed production 500 error on `PATCH /api/v1/me/profile`: payload sent `gender: "Male"`, while Zod schema expected canonical enum (`['MALE', 'FEMALE', 'OTHER']`).
+  - Defined canonical `Gender` enum (`MALE`, `FEMALE`, `OTHER`) in `@sanchay/types`.
+  - Updated `UpdateProfileSchema` in `@sanchay/validation` with preprocess normalizers for both `Gender` and `CitizenCategory` to handle case variations and empty strings safely while rejecting invalid values with clear 400 validation errors.
+  - Updated `GlobalHttpExceptionFilter` in NestJS API to catch `ZodError` and return structured HTTP 400 Bad Request responses with `AppErrorCode.VALIDATION_ERROR` rather than unhandled 500 errors.
+  - Updated frontend `ProfilePage` (`apps/web/src/app/profile/page.tsx`) to submit minimal delta PATCH payloads (e.g. `{ "category": "OBC_NCL" }`) and use canonical uppercase enums.
+  - Refined frontend error handling to surface exact server-provided validation messages rather than generic session expiration errors.
+  - Reinforced Sanchay Profile as the SINGLE SOURCE OF TRUTH: citizen attributes (Name, DOB, Gender, Category, Academic qualifications) are managed in Profile and consumed by the JEE Main application in 100% read-only mode (`✓ From Sanchay Profile`).
 
 ---
 
@@ -231,6 +231,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 ## Last Validation
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
-- **Tests:** Passed (79/79 unit and security tests passing across all packages)
-- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; `sanchay-api` Vercel production status `READY`)
-- **Validation Date:** 2026-08-17T01:28:00+05:30
+- **Tests:** Passed (95/95 unit and security tests passing across all packages)
+- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; Next.js 29/29 routes generated)
+- **Validation Date:** 2026-08-17T15:45:00+05:30

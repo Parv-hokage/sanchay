@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       userId: 'usr_parv_demo_001',
       fullName: 'Parv Mittal',
       dateOfBirth: '2006-08-15',
-      gender: 'Male',
+      gender: 'MALE',
       category: 'OBC_NCL',
       preferredLanguage: 'en',
     };

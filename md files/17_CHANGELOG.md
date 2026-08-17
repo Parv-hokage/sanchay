@@ -338,4 +338,48 @@ All meaningful product, architecture, security, API, and implementation changes 
 - **Unit & Integration Test Suite**: 85/85 tests passed across 16 test files (including 6 dedicated conversation context inheritance tests in `ai.jee.spec.ts`).
 - **Production Endpoints**: Verified live `health`, `auth/login`, `auth/verify`, and error handling on `https://sanchay-three.vercel.app`.
 
+---
+
+## [0.8.3] — 2026-08-17 — Fix Profile PATCH Zod Enum Validation & Sovereign Profile Alignment
+
+### Root Cause Analysis
+
+- **Production Issue**: `PATCH /api/v1/me/profile` failed with HTTP 500 (`ZodError: invalid_enum received: "Male"`).
+- **Trigger**: Updating citizen Category/Caste on the frontend triggered a PATCH request carrying the entire profile payload, including `gender: "Male"`.
+- **Enum Mismatch**: Backend `UpdateProfileSchema` expected the canonical enum `['MALE', 'FEMALE', 'OTHER']`. Unhandled `ZodError` was caught as generic 500 error by the NestJS HTTP exception filter.
+- **Misleading Frontend Message**: The frontend converted the validation failure into a generic `"Session is invalid, expired, or has been revoked."` error message.
+
+### Fixed
+
+- **Canonical Gender Enum & Validation Normalization**:
+  - Defined canonical `Gender` enum (`MALE`, `FEMALE`, `OTHER`) in `@sanchay/types`.
+  - Updated `UpdateProfileSchema` in `@sanchay/validation` to use `z.nativeEnum(Gender)` and `z.nativeEnum(CitizenCategory)` with case-insensitive and whitespace normalization (accepting `"Male"` / `"MALE"` and normalizing to canonical `Gender.MALE`; converting empty string category to `null`).
+  - Added strict, actionable validation error messages for invalid gender and category inputs.
+- **Global HTTP Exception Filter Validation Handling**:
+  - Updated `GlobalHttpExceptionFilter` in NestJS API to catch `ZodError` and return structured HTTP 400 Bad Request responses with `code: AppErrorCode.VALIDATION_ERROR` and specific field failure details instead of unhandled 500 errors.
+- **Minimal & Consistent Profile PATCH Payloads**:
+  - Updated `ProfilePage` (`apps/web/src/app/profile/page.tsx`) to construct minimal delta PATCH payloads (e.g. `{ "category": "OBC_NCL" }`) and use canonical uppercase enum values (`MALE`, `FEMALE`, `OTHER`).
+  - Updated Next.js API mock routes (`/api/v1/me/profile`, `/api/v1/auth/verify`, `/api/v1/applications/[id]`) and backend default fallbacks (`AuthService`, `MeService`, `ApplicationService`) to return canonical `MALE` / `FEMALE` / `OTHER`.
+- **Frontend Error Handling Refinement**:
+  - Differentiated authentication/session errors (HTTP 401) from validation/data errors (HTTP 400/422).
+  - Profile update now displays exact server-provided validation messages (`"Update failed: ..."`).
+- **Single Source of Truth Enforcement for JEE Main Application**:
+  - Sanchay Profile remains the sole authoritative source of truth for citizen identity and academic qualifications (Name, DOB, Gender, Category, Academic records).
+  - JEE Application (`/services/jee-main/apply`) strictly reads citizen Category from Sanchay Profile in read-only mode, displaying the verified `✓ From Sanchay Profile` provenance tag.
+  - Direct profile editing within application forms is prevented; users must update Sanchay Profile (`/profile`) to update citizen attributes.
+
+### Tested & Verified
+
+- **Automated Test Suite**: 95/95 tests passing across 18 test files in monorepo:
+  - Valid gender profile updates (`MALE`, `FEMALE`, `OTHER`, `"Male"`).
+  - Valid category profile updates (`GENERAL`, `EWS`, `OBC_NCL`, `SC`, `ST`, `null`).
+  - Minimal category-only PATCH payloads.
+  - Rejection of invalid gender inputs with HTTP 400 validation error.
+  - Rejection of invalid category inputs with HTTP 400 validation error.
+  - Rejection of unauthorized profile updates (HTTP 401).
+  - JEE application candidate data mapping from Profile as single source of truth.
+- **Typecheck & Build**:
+  - `pnpm typecheck` passed (0 errors across 9 workspace projects).
+  - `pnpm build` passed (Prisma Client generation, all worker/package builds, NestJS compilation, Next.js static generation 29/29 routes).
+
 

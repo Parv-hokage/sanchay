@@ -42,6 +42,12 @@ export interface IdentityLink {
   createdAt: Date;
 }
 
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+
 export enum CitizenCategory {
   GENERAL = 'GENERAL',
   EWS = 'EWS',
@@ -55,7 +61,7 @@ export interface CitizenProfile {
   userId: string;
   fullName: string;
   dateOfBirth?: string | null;
-  gender?: string | null;
+  gender?: Gender | string | null;
   category?: CitizenCategory | null;
   preferredLanguage: string;
   createdAt: Date;
@@ -134,7 +140,7 @@ export interface AuthSessionData {
 export interface UpdateProfileDto {
   fullName?: string;
   dateOfBirth?: string;
-  gender?: string;
+  gender?: Gender | string;
   category?: CitizenCategory | null;
   preferredLanguage?: string;
 }

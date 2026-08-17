@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UpdateProfileSchema } from '@sanchay/validation';
+import { CitizenProfile, Gender, CitizenCategory } from '@sanchay/types';
 
-let currentProfile = {
+let currentProfile: Partial<CitizenProfile> = {
   id: 'prof_parv_demo_001',
   userId: 'usr_parv_demo_001',
   fullName: 'Parv Mittal',
   dateOfBirth: '2006-08-15',
-  gender: 'Male',
-  category: 'OBC_NCL',
+  gender: Gender.MALE,
+  category: CitizenCategory.OBC_NCL,
   preferredLanguage: 'en',
 };
 
@@ -23,9 +25,10 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
+    const validated = UpdateProfileSchema.parse(body);
     currentProfile = {
       ...currentProfile,
-      ...body,
+      ...validated,
     };
 
     return NextResponse.json({
@@ -35,12 +38,15 @@ export async function PATCH(req: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    const message = error?.errors
+      ? error.errors.map((e: any) => `${e.path.join('.') || 'field'}: ${e.message}`).join('; ')
+      : error.message || 'Failed to update profile.';
     return NextResponse.json(
       {
         error: {
-          code: 'BAD_REQUEST',
-          message: (error as Error).message || 'Failed to update profile.',
+          code: 'VALIDATION_ERROR',
+          message: `Invalid profile data: ${message}`,
         },
       },
       { status: 400 },

@@ -85,7 +85,7 @@ const DEFAULT_CITIZEN_USER = {
     userId: 'user-default-001',
     fullName: 'Parv Mittal',
     dateOfBirth: new Date('2006-08-15'),
-    gender: 'Male',
+    gender: 'MALE',
     category: 'OBC_NCL',
     preferredLanguage: 'en',
     createdAt: new Date(),

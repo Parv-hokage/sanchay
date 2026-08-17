@@ -249,9 +249,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sanchay-navy-500"
                   >
                     <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other / Third Gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other / Third Gender</option>
                   </select>
                 ) : field.fieldKey === 'category' ? (
                   <select
@@ -260,9 +260,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sanchay-navy-500"
                   >
                     <option value="">Select Category</option>
-                    <option value="General">General (GEN)</option>
-                    <option value="General-EWS">General - Economically Weaker Section (EWS)</option>
-                    <option value="OBC-NCL">Other Backward Class (OBC-NCL)</option>
+                    <option value="GENERAL">General (GEN)</option>
+                    <option value="EWS">General - Economically Weaker Section (EWS)</option>
+                    <option value="OBC_NCL">Other Backward Class (OBC-NCL)</option>
                     <option value="SC">Scheduled Caste (SC)</option>
                     <option value="ST">Scheduled Tribe (ST)</option>
                   </select>

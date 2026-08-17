@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AddressType, CitizenCategory, ContactType, IdentityProviderType } from '@sanchay/types';
+import { AddressType, CitizenCategory, ContactType, Gender, IdentityProviderType } from '@sanchay/types';
 
 /**
  * UUID v4 / Sanchay UID Validator
@@ -53,8 +53,29 @@ export const VerifyOtpRequestSchema = z.object({
 export const UpdateProfileSchema = z.object({
   fullName: SafeString(100).optional(),
   dateOfBirth: DateOfBirthSchema.optional(),
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
-  category: z.nativeEnum(CitizenCategory).nullable().optional(),
+  gender: z
+    .preprocess((val) => {
+      if (typeof val === 'string') {
+        const trimmed = val.trim().toUpperCase();
+        if (trimmed === 'MALE' || trimmed === 'FEMALE' || trimmed === 'OTHER') return trimmed;
+      }
+      return val;
+    }, z.nativeEnum(Gender, { errorMap: () => ({ message: "Gender value is invalid. Expected 'MALE', 'FEMALE', or 'OTHER'." }) }))
+    .optional(),
+  category: z
+    .preprocess((val) => {
+      if (val === '' || val === null || val === undefined) return null;
+      if (typeof val === 'string') {
+        const normalized = val.trim().toUpperCase().replace(/[-\s]/g, '_');
+        if (normalized === 'GENERAL' || normalized === 'GEN') return CitizenCategory.GENERAL;
+        if (normalized === 'EWS' || normalized === 'GENERAL_EWS') return CitizenCategory.EWS;
+        if (normalized === 'OBC_NCL' || normalized === 'OBC') return CitizenCategory.OBC_NCL;
+        if (normalized === 'SC') return CitizenCategory.SC;
+        if (normalized === 'ST') return CitizenCategory.ST;
+      }
+      return val;
+    }, z.nativeEnum(CitizenCategory, { errorMap: () => ({ message: "Category value is invalid. Expected 'GENERAL', 'EWS', 'OBC_NCL', 'SC', or 'ST'." }) }).nullable())
+    .optional(),
   preferredLanguage: z.string().trim().min(2).max(10).optional(),
 });
 
