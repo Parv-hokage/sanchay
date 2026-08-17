@@ -211,14 +211,15 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Emergency Phase E5 — Profile & Citizen Data Integrity (ADR-030)**.
-  - **Objective**: Establish Sanchay Citizen Profile as the single trusted source of truth for citizen identity data, enforce read-only consumption in application forms (`✓ From Sanchay Profile`), and guarantee AI profile mutation protection.
-  - **Profile & Integrity Architecture**:
-    1. Sanchay Profile is the single source of truth for citizen identity (`fullName`, `dateOfBirth`, `gender`, `category`, `contact`, `addresses`).
-    2. Application forms (including JEE Main sandbox) consume profile fields strictly in read-only mode with `✓ From Sanchay Profile` badges and links to `/me/profile` for modifications.
-    3. Category canonical enums (`GENERAL`, `OBC_NCL`, `SC`, `ST`, `EWS`) and gender enums (`MALE`, `FEMALE`, `TRANSGENDER`) are strictly mapped and enforced.
-    4. AI assistant reads authorized profile context for guidance but is strictly prevented from mutating profile data or bypassing validation.
-    5. Continuous emergency execution log updated in `emergency phase/EMERGENCY_EXECUTION_LOG.md`.
+- Completed: **Emergency Phase E6 — JEE Application Integration & Workflow Stability (ADR-031)**.
+  - **Objective**: Stabilize the JEE application workflow end-to-end, enforcing read-only profile consumption (`✓ From Sanchay Profile`), user-editable application-specific preferences, comprehensive citizen review, submission safety, and contextual AI assistance.
+  - **Workflow & JEE Architecture**:
+    1. 8-step wizard progress model in JEE Main sandbox: Personal (Profile), Contact (Profile), Academic (Profile), Examination Options (User Choice), Centre Preferences (User Choice), Documents, Citizen Review, Confirmation.
+    2. Read-only presentation of profile-owned attributes (`fullName`, `dateOfBirth`, `gender`, `category`) with `✓ From Sanchay Profile` badges and links to `/me/profile` for edits.
+    3. Category (`OBC_NCL`) and gender (`MALE`) canonical mapping propagated without secondary editable duplication.
+    4. Submission safety: Explicit user declaration checkbox required before simulation submission; no unauthorized or fabricated external submissions.
+    5. AI integration: Contextual assistance and intent detection for JEE ("Apply for JEE", "Is everything filled?") without profile mutation tools.
+    6. Continuous emergency execution log updated in `emergency phase/EMERGENCY_EXECUTION_LOG.md` (Log Entries 8 and 9).
 
 ---
 
@@ -233,5 +234,5 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
-- **Profile & Citizen Data Integrity:** Passed (Single source of truth, read-only application forms, AI mutation protection verified)
-- **Validation Date:** 2026-08-17T17:31:00+05:30
+- **JEE Application Workflow & Profile Integration:** Passed (8-step wizard, read-only profile data, submission safety, AI assistance verified)
+- **Validation Date:** 2026-08-17T17:39:00+05:30
