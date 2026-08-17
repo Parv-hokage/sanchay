@@ -6,13 +6,26 @@ let serverlessHandler;
 function findServerless(dir) {
   if (!dir || !fs.existsSync(dir)) return null;
   try {
+    const directBundle = path.join(dir, 'serverless.bundle.js');
+    if (fs.existsSync(directBundle)) return directBundle;
+
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         const found = findServerless(fullPath);
         if (found) return found;
-      } else if (entry.name === 'serverless.js') {
+      } else if (entry.name === 'serverless.bundle.js') {
+        return fullPath;
+      }
+    }
+
+    const directJs = path.join(dir, 'serverless.js');
+    if (fs.existsSync(directJs)) return directJs;
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.name === 'serverless.js') {
         return fullPath;
       }
     }

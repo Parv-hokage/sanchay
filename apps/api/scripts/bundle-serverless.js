@@ -8,8 +8,8 @@ async function buildBundle() {
 
   console.log('[SANCHAY] Bundling self-contained serverless API with esbuild...');
 
-  // Use src/serverless.ts directly as entrypoint
-  const entryPoint = path.join(apiRoot, 'src/serverless.ts');
+  // Use compiled dist/serverless.js entrypoint so TypeScript decorators and metadata are fully preserved
+  const entryPoint = path.join(distDir, 'serverless.js');
 
   console.log(`[SANCHAY] Using entrypoint: ${entryPoint}`);
 
