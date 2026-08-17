@@ -382,4 +382,33 @@ All meaningful product, architecture, security, API, and implementation changes 
   - `pnpm typecheck` passed (0 errors across 9 workspace projects).
   - `pnpm build` passed (Prisma Client generation, all worker/package builds, NestJS compilation, Next.js static generation 29/29 routes).
 
+---
+
+## [0.8.4] — 2026-08-17 — MD 7.5: Permanent API / Vercel Deployment Stabilization
+
+### Root Cause Analysis
+
+- **Production Issue**: Vercel serverless function crashed on invocation with `500 INTERNAL_SERVER_ERROR`, `FUNCTION_INVOCATION_FAILED`, `Cannot find module '@sanchay/config'`.
+- **Underlying Architectural Flaw**: In a pnpm monorepo, internal `@sanchay/*` workspace dependencies are symlinked. When Vercel isolates and packages the `apps/api` serverless function, symlinks pointing outside the Lambda function root are unresolvable at Node.js runtime. TypeScript `paths` aliases alone did not rewrite or bundle runtime `require` statements.
+
+### Fixed
+
+- **Dynamic Module Alias Resolver Hook**:
+  - Implemented `registerModuleAliases()` in `apps/api/src/common/bootstrap-aliases.ts` and `apps/api/api/index.js`, hooking Node's `Module._resolveFilename` on startup.
+  - Dynamically routes all internal workspace imports (`@sanchay/config`, `@sanchay/types`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, `@sanchay/worker-knowledge-ingestion`, `@sanchay/worker-scheduled-jobs`) to their compiled artifacts within `dist/` or packages across all serverless and container execution environments.
+- **Physical Standalone Packaging Step**:
+  - Created `apps/api/scripts/prepare-standalone.js` executed automatically post-build.
+  - Generates real physical packages in `apps/api/node_modules/@sanchay/*` and `apps/api/dist/node_modules/@sanchay/*` with valid `package.json` entrypoints, ensuring zero dependency on external monorepo symlinks.
+- **Worker Package Exports Alignment**:
+  - Added modern `exports` configuration across `workers/document-processing`, `workers/knowledge-ingestion`, and `workers/scheduled-jobs`.
+- **Serverless Helmet & Exception Guard**:
+  - Configured `helmet({ contentSecurityPolicy: false, hidePoweredBy: false })` in `serverless.ts` to prevent header modification errors during serverless request handling.
+
+### Tested & Verified
+
+- **Typecheck**: `pnpm typecheck` — 0 errors across 9 workspace projects.
+- **Tests**: `pnpm test` — 95/95 tests passing across 18 test suites (100%).
+- **Build**: `pnpm build` — Clean production builds for NestJS API, Next.js web application (29/29 routes), and standalone packages.
+- **Direct Serverless Execution**: Verified direct invocation of `apps/api/api/index.js` returning 200 JSON for `GET /api/v1/health`.
+
 

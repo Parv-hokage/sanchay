@@ -211,14 +211,14 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Fix Profile PATCH Zod Enum Validation & Sovereign Profile Alignment (ADR-025)**.
-  - Diagnosed production 500 error on `PATCH /api/v1/me/profile`: payload sent `gender: "Male"`, while Zod schema expected canonical enum (`['MALE', 'FEMALE', 'OTHER']`).
-  - Defined canonical `Gender` enum (`MALE`, `FEMALE`, `OTHER`) in `@sanchay/types`.
-  - Updated `UpdateProfileSchema` in `@sanchay/validation` with preprocess normalizers for both `Gender` and `CitizenCategory` to handle case variations and empty strings safely while rejecting invalid values with clear 400 validation errors.
-  - Updated `GlobalHttpExceptionFilter` in NestJS API to catch `ZodError` and return structured HTTP 400 Bad Request responses with `AppErrorCode.VALIDATION_ERROR` rather than unhandled 500 errors.
-  - Updated frontend `ProfilePage` (`apps/web/src/app/profile/page.tsx`) to submit minimal delta PATCH payloads (e.g. `{ "category": "OBC_NCL" }`) and use canonical uppercase enums.
-  - Refined frontend error handling to surface exact server-provided validation messages rather than generic session expiration errors.
-  - Reinforced Sanchay Profile as the SINGLE SOURCE OF TRUTH: citizen attributes (Name, DOB, Gender, Category, Academic qualifications) are managed in Profile and consumed by the JEE Main application in 100% read-only mode (`✓ From Sanchay Profile`).
+- Completed: **MD 7.5 — Permanent API / Vercel Deployment Stabilization (ADR-026)**.
+  - **Root Cause**: In clean Vercel serverless Lambda environments, pnpm monorepo symlinks to internal workspace packages (`@sanchay/*`) failed to resolve because Lambda packaging isolates `apps/api` without external monorepo directories.
+  - **Multi-Layer Self-Contained Runtime Architecture**:
+    1. **Dynamic Module Alias Resolver Hook** (`apps/api/src/common/bootstrap-aliases.ts` & `apps/api/api/index.js`): Hooks Node's `Module._resolveFilename` on startup to route all internal workspace requires (`@sanchay/config`, `@sanchay/types`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, `@sanchay/worker-knowledge-ingestion`, `@sanchay/worker-scheduled-jobs`) to their compiled artifacts in `dist/`.
+    2. **Physical Package Deployment Step** (`apps/api/scripts/prepare-standalone.js`): Automatically deployed post-build to create physical directories in both `apps/api/node_modules/@sanchay/*` and `apps/api/dist/node_modules/@sanchay/*` with valid `package.json` entrypoints.
+    3. **Worker Package Exports Alignment**: Configured standard `exports` maps across all worker packages (`document-processing`, `knowledge-ingestion`, `scheduled-jobs`).
+    4. **Serverless Error Contract**: Verified `/api/v1/*` endpoints return structured JSON on all error conditions.
+  - **Preserved Core Functionality**: Sanchay Profile remains the single source of truth; JEE application consumes profile in read-only mode (`✓ From Sanchay Profile`); category and gender canonical enums strictly enforced.
 
 ---
 
@@ -232,5 +232,5 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
-- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; Next.js 29/29 routes generated)
-- **Validation Date:** 2026-08-17T15:45:00+05:30
+- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; Next.js 29/29 routes generated; standalone packages prepared)
+- **Validation Date:** 2026-08-17T16:10:00+05:30
