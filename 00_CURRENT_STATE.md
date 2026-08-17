@@ -211,16 +211,16 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Emergency Phase E2 — Permanent API Packaging & Vercel Fix (ADR-027)**.
-  - **Root Cause Fixed**: In clean Vercel serverless Lambda environments, pnpm monorepo symlinks to internal workspace packages (`@sanchay/*`) failed to resolve because Lambda packaging isolates `apps/api` without external monorepo directories.
-  - **Permanent Bundling Architecture**:
-    1. Integrated `esbuild` serverless bundler (`apps/api/scripts/bundle-serverless.js`) executed post-NestJS compilation on `pnpm build`.
-    2. Preserves TypeScript `design:paramtypes` metadata emitted by `nest build` while inlining all `@sanchay/*` packages and worker code into `apps/api/dist/serverless.bundle.js`.
-    3. Production-safe package.json exports across all internal packages pointing strictly to `./dist/index.js` and `./dist/index.d.ts`.
-    4. Verified 0 runtime `@sanchay/*`, 0 `../../packages`, and 0 `.ts` source references in the serverless bundle.
-    5. Clean runtime entrypoint in `apps/api/api/index.js` loading `dist/serverless.bundle.js` directly.
-    6. Isolated runtime test verified with HTTP 200 on `GET /api/v1/health` and `GET /api/v1/departments`.
-  - **Preserved Core Functionality**: Sanchay Profile remains the single source of truth; JEE application consumes profile in read-only mode (`✓ From Sanchay Profile`); category and gender canonical enums strictly enforced.
+- Completed: **Emergency Phase E3 — Authentication & Session Stability (ADR-028)**.
+  - **Objective**: Stabilize and verify the end-to-end authentication and session layer across local and production environments following E2 permanent serverless bundling.
+  - **Authentication Architecture**:
+    1. Passwordless OTP challenge initiation (`POST /api/v1/auth/login`) with audit logging.
+    2. Challenge verification (`POST /api/v1/auth/verify`) generating cryptographic stateless tokens with 7-day expiration and DB/in-memory session backing.
+    3. Session inspection (`GET /api/v1/auth/session`) extracting identity context via `AuthGuard` and `CurrentUser` decorator.
+    4. Session revocation (`POST /api/v1/auth/logout`) invalidating active sessions with full audit trail.
+    5. Strict authorization enforcement preventing cross-user data access (`403 Forbidden` IDOR protection in `MeService`, `ApplicationService`, `DocumentService`).
+    6. Structured JSON error envelopes for invalid credentials (401), missing tokens (401), expired sessions (401), and malformed requests (400).
+    7. Verified zero exposure of secrets, tokens, or personal identifiers in error responses or logs.
 
 ---
 
@@ -235,5 +235,5 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
-- **Artifact Isolation:** Passed (Serverless bundle verified with 0 unresolved `@sanchay/*` or source path references; isolated runtime HTTP 200 verified)
-- **Validation Date:** 2026-08-17T16:53:00+05:30
+- **Authentication & Session Stability:** Passed (Login, verification, session validation, logout, and IDOR protection verified)
+- **Validation Date:** 2026-08-17T17:00:00+05:30

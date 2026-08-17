@@ -411,4 +411,27 @@ All meaningful product, architecture, security, API, and implementation changes 
 - **Build**: `pnpm build` — Clean production builds for NestJS API, Next.js web application (29/29 routes), and serverless bundle.
 - **Artifact Isolation**: Verified `dist/serverless.bundle.js` contains 0 unresolved `@sanchay/*` or `../../packages` runtime imports and initializes successfully in isolation.
 
+---
+
+## [0.8.5] — 2026-08-17 — Emergency Phase E3: Authentication & Session Stability
+
+### Fixed & Stabilized
+
+- **End-to-End Authentication Pipeline**:
+  - Validated passwordless OTP login challenge lifecycle (`POST /api/v1/auth/login`) with audit logging.
+  - Verified challenge verification (`POST /api/v1/auth/verify`), generating HMAC-SHA256 stateless tokens with 7-day expiration and DB/in-memory session backing.
+  - Verified active session inspection (`GET /api/v1/auth/session`) via `AuthGuard` extracting citizen ID, Sanchay UID, and status.
+  - Verified session revocation (`POST /api/v1/auth/logout`) with audit event capture.
+- **Strict Authorization & IDOR Protection**:
+  - Validated user isolation across profile, addresses, identity links, applications, and documents, returning structured `403 Forbidden` JSON envelopes for cross-user resource access.
+- **Security & Error Response Standards**:
+  - Ensured structured JSON envelopes for 400 Bad Request, 401 Unauthorized, and 403 Forbidden without exposing stack traces, password hashes, or token secrets.
+
+### Tested & Verified
+
+- **Typecheck**: `pnpm typecheck` — 0 errors across 9 workspace projects.
+- **Tests**: `pnpm test` — 95/95 tests passing across 18 test suites (100%).
+- **Build**: `pnpm build` — Clean production build with self-contained serverless bundle.
+- **Quality Gates**: All automated unit, ownership, and security tests passing.
+
 
