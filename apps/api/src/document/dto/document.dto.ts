@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
-import { DocumentType, DocumentStatus } from '@sanchay/types';
+import { DocumentType, DocumentStatus } from '../../types';
 
 export class UploadDocumentDto {
   @IsEnum(DocumentType, {

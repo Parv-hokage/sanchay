@@ -15,7 +15,7 @@ import {
   GrantConsentDto,
   AuditActionType,
   ConsentStatus,
-} from '@sanchay/types';
+} from '../types';
 
 // In-memory fallback stores for local and serverless resilience when DB is not reachable
 const inMemoryProfiles = new Map<string, any>();

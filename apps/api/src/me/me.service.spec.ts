@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MeService } from './me.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AddressType, ConsentStatus, IdentityProviderType } from '@sanchay/types';
+import { AddressType, ConsentStatus, IdentityProviderType } from '../types';
 
 describe('MeService', () => {
   let meService: MeService;

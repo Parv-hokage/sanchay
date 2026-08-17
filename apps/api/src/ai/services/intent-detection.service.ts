@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IntentType } from '@sanchay/types';
+import { IntentType } from '../../types';
 
 export interface DetectedIntent {
   intent: IntentType;

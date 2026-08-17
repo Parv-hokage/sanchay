@@ -14,7 +14,7 @@ import {
   LoginResponseData,
   AuthSessionData,
   AuditActionType,
-} from '@sanchay/types';
+} from '../types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_at_least_32_chars_long_for_dev_only';
 

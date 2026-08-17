@@ -7,7 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Request } from 'express';
-import { ApiResponse } from '@sanchay/shared';
+import { ApiResponse } from '../../shared';
 import { REQUEST_ID_HEADER } from '../middleware/request-id.middleware';
 
 @Injectable()

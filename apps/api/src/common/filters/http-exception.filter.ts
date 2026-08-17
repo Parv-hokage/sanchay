@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ApiErrorResponse, AppErrorCode } from '@sanchay/shared';
+import { ApiErrorResponse, AppErrorCode } from '../../shared';
 import { REQUEST_ID_HEADER } from '../middleware/request-id.middleware';
 
 import { ZodError } from 'zod';

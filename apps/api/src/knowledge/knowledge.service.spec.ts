@@ -5,8 +5,8 @@ import {
   semanticChunk,
   generateDeterministicEmbedding,
   computeCosineSimilarity,
-} from '@sanchay/worker-knowledge-ingestion';
-import { AuthorityLevel } from '@sanchay/types';
+} from './ingestion';
+import { AuthorityLevel } from '../types';
 
 describe('KnowledgeService & Hybrid RAG Retrieval Tests', () => {
   let knowledgeService: KnowledgeService;

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ToolRegistryService } from './tools/tool-registry.service';
 import { ForbiddenException, BadRequestException } from '@nestjs/common';
-import { RiskLevel } from '@sanchay/types';
+import { RiskLevel } from '../types';
 
 describe('AI Security, Prompt Injection & Consequential Confirmation Tests', () => {
   let toolRegistry: ToolRegistryService;

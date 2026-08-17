@@ -22,7 +22,7 @@ import {
   AddContactSchema,
   CreateIdentityLinkSchema,
   GrantConsentSchema,
-} from '@sanchay/validation';
+} from '../validation';
 import {
   UpdateProfileDto,
   CreateAddressDto,
@@ -30,7 +30,7 @@ import {
   AddContactDto,
   CreateIdentityLinkDto,
   GrantConsentDto,
-} from '@sanchay/types';
+} from '../types';
 import { REQUEST_ID_HEADER } from '../common/middleware/request-id.middleware';
 
 @ApiTags('Me (Citizen Profile & Resources)')

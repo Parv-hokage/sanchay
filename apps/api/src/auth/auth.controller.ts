@@ -17,8 +17,8 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import {
   LoginRequestSchema,
   VerifyOtpRequestSchema,
-} from '@sanchay/validation';
-import { LoginRequestDto, VerifyOtpRequestDto } from '@sanchay/types';
+} from '../validation';
+import { LoginRequestDto, VerifyOtpRequestDto } from '../types';
 import { REQUEST_ID_HEADER } from '../common/middleware/request-id.middleware';
 
 @ApiTags('Auth')

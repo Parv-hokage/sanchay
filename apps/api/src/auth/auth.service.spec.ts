@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { IdentityProviderType, UserStatus } from '@sanchay/types';
+import { IdentityProviderType, UserStatus } from '../types';
 
 describe('AuthService', () => {
   let authService: AuthService;

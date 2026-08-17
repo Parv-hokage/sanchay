@@ -400,5 +400,29 @@
   - `GET /api/v1/auth/session` without auth $\rightarrow$ 401 Unauthorized.
   - `POST /api/v1/auth/login` $\rightarrow$ 200 OK (`sessionChallengeId` returned).
 - **Quality gates:** Typecheck: PASS | Tests: PASS (95/95) | Build: PASS.
-- **Next step:** Commit and push to main.
 
+### Log Entry 13 — Emergency Phase E8: Remove Monorepo Runtime Dependencies from API
+- **Timestamp:** 2026-08-17T19:32:00+05:30
+- **Phase:** E8 (Remove Monorepo Runtime Dependencies from API)
+- **Objective:** Permanently eliminate all `@sanchay/*`, `packages/*`, and `workers/*` dependencies from `apps/api` so that `apps/api` is 100% self-contained within `apps/api/src/`, preventing any Vercel TS2307 module resolution failures or missing internal workspace symlinks during production build.
+- **Root cause analyzed:**
+  - Vercel's isolated build environment failed during `tsc` compilation with `TS2307: Cannot find module '@sanchay/types'` because `apps/api` declared workspace runtime dependencies to internal monorepo packages.
+  - Previous attempts to bundle via path aliasing or esbuild plugins still left compile-time or runtime dependencies on external workspace packages.
+- **Actions taken:**
+  - Created fully self-contained local modules within `apps/api/src/`:
+    - `src/types/index.ts`: Comprehensive domain types, enums, and DTOs.
+    - `src/config/index.ts`: Self-contained environment config loader with Zod validation.
+    - `src/shared/index.ts`: Self-contained API response envelopes and error codes.
+    - `src/validation/index.ts`: Self-contained Zod request schemas.
+    - `src/document/scanner.ts`: Self-contained document malware & integrity scanning.
+    - `src/knowledge/ingestion/`: SSRF defense, HTML parser, semantic chunker, and deterministic embedding generator.
+  - Refactored all 30+ files across `apps/api/src/` (`ai/`, `application/`, `audit/`, `auth/`, `catalog/`, `common/`, `document/`, `health/`, `knowledge/`, `me/`) to reference local modules exclusively.
+  - Cleaned `apps/api/package.json` to completely remove `@sanchay/types`, `@sanchay/config`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, and `@sanchay/worker-knowledge-ingestion`. Added required direct dependencies (`dotenv`, `zod`).
+  - Simplified `apps/api/scripts/bundle-serverless.js` to bundle directly from `src/serverless.ts` into a standalone CJS bundle (`serverless.bundle.js`, 216 KB).
+- **Bundle & Quality Gate Results:**
+  - Invariant Verification: 0 unresolved `@sanchay/*` requires, 0 relative source path requires.
+  - `pnpm typecheck`: PASS across all 10 monorepo packages and apps.
+  - `pnpm test`: PASS (18 test suites, 107 tests passing 100%).
+  - `pnpm build`: PASS (All packages, self-contained API bundle, and Next.js web application built cleanly).
+  - Node.js Isolated Runtime: `bootstrapServer()` and `handler` boot cleanly in memory.
+- **Status:** READY FOR PRODUCTION DEPLOYMENT.

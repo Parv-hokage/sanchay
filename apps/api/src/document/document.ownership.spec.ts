@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DocumentService } from './document.service';
 import { StorageService } from '../storage/storage.service';
-import { DocumentType, DocumentStatus } from '@sanchay/types';
+import { DocumentType, DocumentStatus } from '../types';
 
 describe('Document Security & IDOR Authorization Tests', () => {
   let documentService: DocumentService;

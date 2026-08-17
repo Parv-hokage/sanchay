@@ -4,19 +4,12 @@ const fs = require('fs');
 
 async function buildBundle() {
   const apiRoot = path.resolve(__dirname, '..');
-  const repoRoot = path.resolve(apiRoot, '../..');
   const distDir = path.join(apiRoot, 'dist');
 
   console.log('[SANCHAY] Bundling self-contained serverless API with esbuild...');
 
-  // Locate the compiled serverless entrypoint (emitted with full decorator metadata by nest build)
-  let entryPoint = path.join(distDir, 'serverless.js');
-  if (!fs.existsSync(entryPoint)) {
-    entryPoint = path.join(distDir, 'apps/api/src/serverless.js');
-  }
-  if (!fs.existsSync(entryPoint)) {
-    entryPoint = path.join(apiRoot, 'src/serverless.ts');
-  }
+  // Use src/serverless.ts directly as entrypoint
+  const entryPoint = path.join(apiRoot, 'src/serverless.ts');
 
   console.log(`[SANCHAY] Using entrypoint: ${entryPoint}`);
 
@@ -28,56 +21,6 @@ async function buildBundle() {
     format: 'cjs',
     outfile: path.join(distDir, 'serverless.bundle.js'),
     packages: 'external',
-    plugins: [
-      {
-        name: 'inline-sanchay-monorepo-modules',
-        setup(build) {
-          // Resolve @sanchay/* package imports to their dist or src index
-          build.onResolve({ filter: /^@sanchay\// }, (args) => {
-            const pkgName = args.path.replace(/^@sanchay\//, '');
-            let candidate;
-            if (pkgName.startsWith('worker-')) {
-              const workerName = pkgName.replace('worker-', '');
-              candidate = path.join(repoRoot, 'workers', workerName, 'dist/index.js');
-              if (!fs.existsSync(candidate)) {
-                candidate = path.join(repoRoot, 'workers', workerName, 'src/index.ts');
-              }
-            } else {
-              candidate = path.join(repoRoot, 'packages', pkgName, 'dist/index.js');
-              if (!fs.existsSync(candidate)) {
-                candidate = path.join(repoRoot, 'packages', pkgName, 'src/index.ts');
-              }
-            }
-            return { path: candidate };
-          });
-
-          // Intercept any relative imports pointing to packages/ or workers/
-          build.onResolve({ filter: /packages\/([a-z0-9-]+)/ }, (args) => {
-            const match = args.path.match(/packages\/([a-z0-9-]+)/);
-            if (match) {
-              const pkgName = match[1];
-              let candidate = path.join(repoRoot, 'packages', pkgName, 'dist/index.js');
-              if (!fs.existsSync(candidate)) {
-                candidate = path.join(repoRoot, 'packages', pkgName, 'src/index.ts');
-              }
-              return { path: candidate };
-            }
-          });
-
-          build.onResolve({ filter: /workers\/([a-z0-9-]+)/ }, (args) => {
-            const match = args.path.match(/workers\/([a-z0-9-]+)/);
-            if (match) {
-              const workerName = match[1];
-              let candidate = path.join(repoRoot, 'workers', workerName, 'dist/index.js');
-              if (!fs.existsSync(candidate)) {
-                candidate = path.join(repoRoot, 'workers', workerName, 'src/index.ts');
-              }
-              return { path: candidate };
-            }
-          });
-        },
-      },
-    ],
     sourcemap: true,
     treeShaking: true,
     logLevel: 'info',

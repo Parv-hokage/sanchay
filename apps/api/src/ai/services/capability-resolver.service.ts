@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IntentType, RiskLevel, ActionCard } from '@sanchay/types';
+import { IntentType, RiskLevel, ActionCard } from '../../types';
 
 export interface ResolvedCapability {
   capabilitySlug: string;

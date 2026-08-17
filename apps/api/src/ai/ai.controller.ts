@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Param, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AiService } from './ai.service';
-import { AiChatDto } from '@sanchay/types';
+import { AiChatDto } from '../types';
 
 @ApiTags('AI Orchestrator')
 @Controller('ai')

@@ -21,7 +21,7 @@ import {
   ActionCard,
   AuditActionType,
   MessageSender,
-} from '@sanchay/types';
+} from '../types';
 
 // In-memory conversation store fallback for offline resilience
 const inMemoryConversations = new Map<string, any>();

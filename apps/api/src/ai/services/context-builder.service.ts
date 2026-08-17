@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SanchayAIContext, Evidence } from '@sanchay/types';
+import { SanchayAIContext, Evidence } from '../../types';
 import { ChatMessagePayload } from '../provider/ai-provider.interface';
 
 @Injectable()

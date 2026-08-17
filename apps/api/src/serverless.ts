@@ -48,7 +48,7 @@ export async function bootstrapServer(): Promise<express.Express> {
   return cachedServer;
 }
 
-export default async function handler(req: Request, res: Response) {
+export async function handler(req: Request, res: Response) {
   if (req.url) {
     if (req.url.startsWith('/api?match=')) {
       const match = req.url.substring('/api?match='.length);
@@ -65,3 +65,5 @@ export default async function handler(req: Request, res: Response) {
   const server = await bootstrapServer();
   return server(req, res);
 }
+
+export default handler;

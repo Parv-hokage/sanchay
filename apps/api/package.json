@@ -16,18 +16,14 @@
     "@nestjs/platform-express": "^10.4.15",
     "@nestjs/swagger": "^8.1.1",
     "@prisma/client": "^6.4.0",
-    "@sanchay/config": "workspace:*",
-    "@sanchay/shared": "workspace:*",
-    "@sanchay/types": "workspace:*",
-    "@sanchay/validation": "workspace:*",
-    "@sanchay/worker-document-processing": "workspace:*",
-    "@sanchay/worker-knowledge-ingestion": "workspace:*",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "dotenv": "^16.4.7",
     "helmet": "^8.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",

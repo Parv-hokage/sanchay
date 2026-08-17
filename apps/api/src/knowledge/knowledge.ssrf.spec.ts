@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateSafeGovernmentUrl } from '@sanchay/worker-knowledge-ingestion';
+import { validateSafeGovernmentUrl } from './ingestion';
 
 describe('Knowledge Pipeline SSRF & Source Security Tests', () => {
   it('allows authentic official government URLs', () => {

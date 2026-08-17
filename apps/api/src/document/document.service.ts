@@ -9,8 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { StorageService } from '../storage/storage.service';
-import { scanDocumentBuffer } from '@sanchay/worker-document-processing';
-import { DocumentType, DocumentStatus, AuditActionType } from '@sanchay/types';
+import { scanDocumentBuffer } from './scanner';
+import { DocumentType, DocumentStatus, AuditActionType } from '../types';
 import { UploadDocumentDto, DocumentQueryDto } from './dto/document.dto';
 
 // In-memory fallback repositories for resilient local testing when DB is offline

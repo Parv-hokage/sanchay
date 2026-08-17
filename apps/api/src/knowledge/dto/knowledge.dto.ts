@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsInt, Min, Max, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
-import { KnowledgeSourceType, AuthorityLevel } from '@sanchay/types';
+import { KnowledgeSourceType, AuthorityLevel } from '../../types';
 
 export class KnowledgeSearchDto {
   @IsString()

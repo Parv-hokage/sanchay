@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { CreateApplicationDto, UpdateFieldsDto, AutofillRequestDto } from './dto/application.dto';
 import { ApplicationStatus, FieldSource } from '@prisma/client';
-import { AuditActionType } from '@sanchay/types';
+import { AuditActionType } from '../types';
+import { CreateApplicationDto, UpdateFieldsDto, AutofillRequestDto } from './dto/application.dto';
 
 export interface ApplicationReviewPayload {
   applicationId: string;

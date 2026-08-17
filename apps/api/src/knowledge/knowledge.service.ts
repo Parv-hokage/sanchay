@@ -12,14 +12,14 @@ import {
   semanticChunk,
   generateDeterministicEmbedding,
   computeCosineSimilarity,
-} from '@sanchay/worker-knowledge-ingestion';
+} from './ingestion';
 import {
   KnowledgeSourceType,
   AuthorityLevel,
   Evidence,
   Citation,
   KnowledgeSearchResult,
-} from '@sanchay/types';
+} from '../types';
 import { KnowledgeSearchDto, CreateSourceDto } from './dto/knowledge.dto';
 
 interface SeededChunk {

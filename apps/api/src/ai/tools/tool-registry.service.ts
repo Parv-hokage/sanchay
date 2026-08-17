@@ -1,5 +1,5 @@
 import { Injectable, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
-import { RiskLevel, ActionCard } from '@sanchay/types';
+import { RiskLevel, ActionCard } from '../../types';
 import { KnowledgeService } from '../../knowledge/knowledge.service';
 import { ApplicationService } from '../../application/application.service';
 import { DocumentService } from '../../document/document.service';

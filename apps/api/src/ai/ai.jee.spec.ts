@@ -5,7 +5,7 @@ import { IntentDetectionService } from './services/intent-detection.service';
 import { ContextBuilderService } from './services/context-builder.service';
 import { CapabilityResolverService } from './services/capability-resolver.service';
 import { ToolRegistryService } from './tools/tool-registry.service';
-import { IntentType, RiskLevel } from '@sanchay/types';
+import { IntentType, RiskLevel } from '../types';
 
 describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   let aiService: AiService;

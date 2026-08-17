@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuditService } from './audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuditActionType } from '@sanchay/types';
+import { AuditActionType } from '../types';
 
 describe('AuditService', () => {
   let auditService: AuditService;
