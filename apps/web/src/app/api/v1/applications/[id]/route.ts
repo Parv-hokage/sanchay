@@ -1,12 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-
 export async function GET(
-  _req: NextRequest,
-  props: { params: Promise<{ id: string }> },
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await props.params;
+  const { id } = await params;
 
-  return NextResponse.json({
+  return Response.json({
     data: {
       id,
       userId: 'usr_parv_demo_001',
