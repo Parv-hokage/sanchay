@@ -384,31 +384,31 @@ All meaningful product, architecture, security, API, and implementation changes 
 
 ---
 
-## [0.8.4] — 2026-08-17 — MD 7.5: Permanent API / Vercel Deployment Stabilization
+## [0.8.4] — 2026-08-17 — Permanent Self-Contained Serverless Artifact Bundling for Vercel
 
 ### Root Cause Analysis
 
-- **Production Issue**: Vercel serverless function crashed on invocation with `500 INTERNAL_SERVER_ERROR`, `FUNCTION_INVOCATION_FAILED`, `Cannot find module '@sanchay/config'`.
-- **Underlying Architectural Flaw**: In a pnpm monorepo, internal `@sanchay/*` workspace dependencies are symlinked. When Vercel isolates and packages the `apps/api` serverless function, symlinks pointing outside the Lambda function root are unresolvable at Node.js runtime. TypeScript `paths` aliases alone did not rewrite or bundle runtime `require` statements.
+- **Production Issue**: Vercel serverless function crashed on invocation with `500 INTERNAL_SERVER_ERROR`, `FUNCTION_INVOCATION_FAILED`, `Cannot find module '../../types/src/index.ts'` and `Cannot find module '@sanchay/config'`.
+- **Underlying Architectural Flaw**: In a pnpm monorepo, internal `@sanchay/*` packages were referenced as external workspace dependencies or exported via TypeScript source paths (`./src/index.ts`). When Vercel packages the serverless function, it isolates `apps/api` without the external monorepo packages, causing missing module errors at runtime.
 
 ### Fixed
 
-- **Dynamic Module Alias Resolver Hook**:
-  - Implemented `registerModuleAliases()` in `apps/api/src/common/bootstrap-aliases.ts` and `apps/api/api/index.js`, hooking Node's `Module._resolveFilename` on startup.
-  - Dynamically routes all internal workspace imports (`@sanchay/config`, `@sanchay/types`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, `@sanchay/worker-knowledge-ingestion`, `@sanchay/worker-scheduled-jobs`) to their compiled artifacts within `dist/` or packages across all serverless and container execution environments.
-- **Physical Standalone Packaging Step**:
-  - Created `apps/api/scripts/prepare-standalone.js` executed automatically post-build.
-  - Generates real physical packages in `apps/api/node_modules/@sanchay/*` and `apps/api/dist/node_modules/@sanchay/*` with valid `package.json` entrypoints, ensuring zero dependency on external monorepo symlinks.
-- **Worker Package Exports Alignment**:
-  - Added modern `exports` configuration across `workers/document-processing`, `workers/knowledge-ingestion`, and `workers/scheduled-jobs`.
-- **Serverless Helmet & Exception Guard**:
-  - Configured `helmet({ contentSecurityPolicy: false, hidePoweredBy: false })` in `serverless.ts` to prevent header modification errors during serverless request handling.
+- **Single-File Self-Contained Serverless Bundler**:
+  - Implemented `apps/api/scripts/bundle-serverless.js` using `esbuild`.
+  - Inlines and bundles all internal workspace packages (`@sanchay/types`, `@sanchay/config`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, `@sanchay/worker-knowledge-ingestion`, `@sanchay/worker-scheduled-jobs`) directly into `apps/api/dist/serverless.bundle.js` (215 KB single-file bundle).
+  - Eliminates all runtime `require("@sanchay/*")` and all relative `../../packages/*` or TypeScript source imports from the deployment artifact.
+- **Compiled Package.json Exports Alignment**:
+  - Reverted package `exports` in all packages and workers to standard compiled outputs (`./dist/index.js` and `./dist/index.d.ts`), preventing source path leaks.
+- **Clean Vercel Serverless Entrypoint**:
+  - Updated `apps/api/api/index.js` to directly load the self-contained `dist/serverless.bundle.js`.
+- **Serverless Request & Error Guard**:
+  - Configured `helmet({ contentSecurityPolicy: false, hidePoweredBy: false })` in `serverless.ts` to ensure full compatibility with serverless response streams.
 
 ### Tested & Verified
 
 - **Typecheck**: `pnpm typecheck` — 0 errors across 9 workspace projects.
 - **Tests**: `pnpm test` — 95/95 tests passing across 18 test suites (100%).
-- **Build**: `pnpm build` — Clean production builds for NestJS API, Next.js web application (29/29 routes), and standalone packages.
-- **Direct Serverless Execution**: Verified direct invocation of `apps/api/api/index.js` returning 200 JSON for `GET /api/v1/health`.
+- **Build**: `pnpm build` — Clean production builds for NestJS API, Next.js web application (29/29 routes), and serverless bundle.
+- **Artifact Isolation**: Verified `dist/serverless.bundle.js` contains 0 unresolved `@sanchay/*` or `../../packages` runtime imports and initializes successfully in isolation.
 
 

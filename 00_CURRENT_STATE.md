@@ -211,13 +211,14 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **MD 7.5 — Permanent API / Vercel Deployment Stabilization (ADR-026)**.
-  - **Root Cause**: In clean Vercel serverless Lambda environments, pnpm monorepo symlinks to internal workspace packages (`@sanchay/*`) failed to resolve because Lambda packaging isolates `apps/api` without external monorepo directories.
-  - **Multi-Layer Self-Contained Runtime Architecture**:
-    1. **Dynamic Module Alias Resolver Hook** (`apps/api/src/common/bootstrap-aliases.ts` & `apps/api/api/index.js`): Hooks Node's `Module._resolveFilename` on startup to route all internal workspace requires (`@sanchay/config`, `@sanchay/types`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-document-processing`, `@sanchay/worker-knowledge-ingestion`, `@sanchay/worker-scheduled-jobs`) to their compiled artifacts in `dist/`.
-    2. **Physical Package Deployment Step** (`apps/api/scripts/prepare-standalone.js`): Automatically deployed post-build to create physical directories in both `apps/api/node_modules/@sanchay/*` and `apps/api/dist/node_modules/@sanchay/*` with valid `package.json` entrypoints.
-    3. **Worker Package Exports Alignment**: Configured standard `exports` maps across all worker packages (`document-processing`, `knowledge-ingestion`, `scheduled-jobs`).
-    4. **Serverless Error Contract**: Verified `/api/v1/*` endpoints return structured JSON on all error conditions.
+- Completed: **Self-Contained Serverless Artifact Bundling for Vercel (ADR-027)**.
+  - **Root Cause**: Monorepo packages (`@sanchay/types`, `@sanchay/config`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-*`) were previously referenced as external runtime workspace dependencies or TypeScript source exports (`../../types/src/index.ts`), causing `Cannot find module` runtime failures on isolated Vercel serverless environments.
+  - **Permanent Bundling Fix**:
+    1. Integrated `esbuild` serverless bundler (`apps/api/scripts/bundle-serverless.js`) executed on `pnpm build`.
+    2. Inlines all `@sanchay/*` workspace dependencies directly into `dist/serverless.bundle.js` (215 KB single-file self-contained bundle).
+    3. Reverted all package.json `exports` to standard compiled output (`./dist/index.js` and `./dist/index.d.ts`).
+    4. Verified zero external runtime references to `@sanchay/*` or TypeScript source paths in the serverless bundle.
+    5. Clean runtime entrypoint in `apps/api/api/index.js` loading `dist/serverless.bundle.js` directly.
   - **Preserved Core Functionality**: Sanchay Profile remains the single source of truth; JEE application consumes profile in read-only mode (`✓ From Sanchay Profile`); category and gender canonical enums strictly enforced.
 
 ---
@@ -232,5 +233,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
-- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; Next.js 29/29 routes generated; standalone packages prepared)
-- **Validation Date:** 2026-08-17T16:10:00+05:30
+- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
+- **Artifact Isolation:** Passed (Serverless bundle verified with 0 unresolved `@sanchay/*` or source path references)
+- **Validation Date:** 2026-08-17T16:25:00+05:30

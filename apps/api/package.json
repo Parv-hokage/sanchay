@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "prisma generate --schema=../../prisma/schema.prisma && nest build && node scripts/prepare-standalone.js",
+    "build": "prisma generate --schema=../../prisma/schema.prisma && nest build && node scripts/bundle-serverless.js",
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
@@ -36,6 +36,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^22.10.1",
     "@types/uuid": "^10.0.0",
+    "esbuild": "^0.28.2",
     "typescript": "^5.7.2",
     "vitest": "^3.0.5"
   }
