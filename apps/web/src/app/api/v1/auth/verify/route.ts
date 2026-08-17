@@ -4,6 +4,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { sessionChallengeId, otp } = body || {};
+    const otpCode = otp || body?.verificationCode || body?.code;
 
     if (!sessionChallengeId) {
       return NextResponse.json(
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (otp !== '123456') {
+    if (otpCode !== '123456') {
       return NextResponse.json(
         {
           error: {
