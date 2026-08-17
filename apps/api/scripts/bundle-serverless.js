@@ -9,15 +9,24 @@ async function buildBundle() {
 
   console.log('[SANCHAY] Bundling self-contained serverless API with esbuild...');
 
-  // 1. Bundle serverless entrypoint directly from TypeScript
+  // Locate the compiled serverless entrypoint (emitted with full decorator metadata by nest build)
+  let entryPoint = path.join(distDir, 'apps/api/src/serverless.js');
+  if (!fs.existsSync(entryPoint)) {
+    entryPoint = path.join(distDir, 'serverless.js');
+  }
+  if (!fs.existsSync(entryPoint)) {
+    entryPoint = path.join(apiRoot, 'src/serverless.ts');
+  }
+
+  console.log(`[SANCHAY] Using entrypoint: ${entryPoint}`);
+
   await esbuild.build({
-    entryPoints: [path.join(apiRoot, 'src/serverless.ts')],
+    entryPoints: [entryPoint],
     bundle: true,
     platform: 'node',
     target: 'node18',
     format: 'cjs',
     outfile: path.join(distDir, 'serverless.bundle.js'),
-    tsconfig: path.join(apiRoot, 'tsconfig.json'),
     packages: 'external',
     plugins: [
       {
@@ -25,11 +34,20 @@ async function buildBundle() {
         setup(build) {
           build.onResolve({ filter: /^@sanchay\// }, (args) => {
             const pkgName = args.path.replace(/^@sanchay\//, '');
+            let candidate;
             if (pkgName.startsWith('worker-')) {
               const workerName = pkgName.replace('worker-', '');
-              return { path: path.join(repoRoot, 'workers', workerName, 'src/index.ts') };
+              candidate = path.join(repoRoot, 'workers', workerName, 'dist/index.js');
+              if (!fs.existsSync(candidate)) {
+                candidate = path.join(repoRoot, 'workers', workerName, 'src/index.ts');
+              }
+            } else {
+              candidate = path.join(repoRoot, 'packages', pkgName, 'dist/index.js');
+              if (!fs.existsSync(candidate)) {
+                candidate = path.join(repoRoot, 'packages', pkgName, 'src/index.ts');
+              }
             }
-            return { path: path.join(repoRoot, 'packages', pkgName, 'src/index.ts') };
+            return { path: candidate };
           });
         },
       },

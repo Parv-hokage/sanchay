@@ -211,14 +211,15 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Self-Contained Serverless Artifact Bundling for Vercel (ADR-027)**.
-  - **Root Cause**: Monorepo packages (`@sanchay/types`, `@sanchay/config`, `@sanchay/shared`, `@sanchay/validation`, `@sanchay/worker-*`) were previously referenced as external runtime workspace dependencies or TypeScript source exports (`../../types/src/index.ts`), causing `Cannot find module` runtime failures on isolated Vercel serverless environments.
-  - **Permanent Bundling Fix**:
-    1. Integrated `esbuild` serverless bundler (`apps/api/scripts/bundle-serverless.js`) executed on `pnpm build`.
-    2. Inlines all `@sanchay/*` workspace dependencies directly into `dist/serverless.bundle.js` (215 KB single-file self-contained bundle).
-    3. Reverted all package.json `exports` to standard compiled output (`./dist/index.js` and `./dist/index.d.ts`).
-    4. Verified zero external runtime references to `@sanchay/*` or TypeScript source paths in the serverless bundle.
+- Completed: **Emergency Phase E2 — Permanent API Packaging & Vercel Fix (ADR-027)**.
+  - **Root Cause Fixed**: In clean Vercel serverless Lambda environments, pnpm monorepo symlinks to internal workspace packages (`@sanchay/*`) failed to resolve because Lambda packaging isolates `apps/api` without external monorepo directories.
+  - **Permanent Bundling Architecture**:
+    1. Integrated `esbuild` serverless bundler (`apps/api/scripts/bundle-serverless.js`) executed post-NestJS compilation on `pnpm build`.
+    2. Preserves TypeScript `design:paramtypes` metadata emitted by `nest build` while inlining all `@sanchay/*` packages and worker code into `apps/api/dist/serverless.bundle.js`.
+    3. Production-safe package.json exports across all internal packages pointing strictly to `./dist/index.js` and `./dist/index.d.ts`.
+    4. Verified 0 runtime `@sanchay/*`, 0 `../../packages`, and 0 `.ts` source references in the serverless bundle.
     5. Clean runtime entrypoint in `apps/api/api/index.js` loading `dist/serverless.bundle.js` directly.
+    6. Isolated runtime test verified with HTTP 200 on `GET /api/v1/health` and `GET /api/v1/departments`.
   - **Preserved Core Functionality**: Sanchay Profile remains the single source of truth; JEE application consumes profile in read-only mode (`✓ From Sanchay Profile`); category and gender canonical enums strictly enforced.
 
 ---
@@ -234,5 +235,5 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
 - **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
-- **Artifact Isolation:** Passed (Serverless bundle verified with 0 unresolved `@sanchay/*` or source path references)
-- **Validation Date:** 2026-08-17T16:25:00+05:30
+- **Artifact Isolation:** Passed (Serverless bundle verified with 0 unresolved `@sanchay/*` or source path references; isolated runtime HTTP 200 verified)
+- **Validation Date:** 2026-08-17T16:53:00+05:30
