@@ -1,46 +1,57 @@
 const path = require('path');
+const fs = require('fs');
+
 let serverlessHandler;
+
+function findServerless(dir) {
+  if (!dir || !fs.existsSync(dir)) return null;
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        const found = findServerless(fullPath);
+        if (found) return found;
+      } else if (entry.name === 'serverless.js') {
+        return fullPath;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 function getHandler() {
   if (!serverlessHandler) {
-    const candidatePaths = [
-      path.join(__dirname, '../apps/api/dist/apps/api/src/serverless'),
-      path.join(__dirname, '../apps/api/dist/src/serverless'),
-      path.join(__dirname, '../apps/api/dist/serverless'),
-      path.join(__dirname, '../dist/apps/api/src/serverless'),
-      path.join(__dirname, '../dist/src/serverless'),
-      path.join(__dirname, '../dist/serverless'),
-      path.join(process.cwd(), 'apps/api/dist/apps/api/src/serverless'),
-      path.join(process.cwd(), 'apps/api/dist/src/serverless'),
-      path.join(process.cwd(), 'apps/api/dist/serverless'),
-      path.join(process.cwd(), 'dist/apps/api/src/serverless'),
-      path.join(process.cwd(), 'dist/src/serverless'),
-      path.join(process.cwd(), 'dist/serverless'),
-      '../apps/api/dist/apps/api/src/serverless',
-      '../apps/api/dist/src/serverless',
-      '../apps/api/dist/serverless',
-      '../dist/apps/api/src/serverless',
-      '../dist/src/serverless',
-      '../dist/serverless',
+    const searchDirs = [
+      path.join(__dirname, '../dist'),
+      path.join(__dirname, '../../dist'),
+      path.join(__dirname, 'dist'),
+      path.join(process.cwd(), 'dist'),
+      path.join(process.cwd(), 'apps/api/dist'),
+      '/var/task/dist',
+      '/var/task/apps/api/dist',
+      path.join(__dirname, '..'),
+      process.cwd(),
     ];
 
-    const errors = [];
-    for (const p of candidatePaths) {
-      try {
-        const mod = require(p);
-        serverlessHandler = mod.default || mod;
-        if (serverlessHandler) break;
-      } catch (err) {
-        errors.push(`${p} -> ${err.message}`);
-      }
+    let targetFile = null;
+    for (const d of searchDirs) {
+      targetFile = findServerless(d);
+      if (targetFile) break;
     }
 
-    if (!serverlessHandler) {
+    if (!targetFile) {
+      const cwdList = fs.existsSync(process.cwd()) ? fs.readdirSync(process.cwd()) : [];
+      const dirList = fs.existsSync(__dirname) ? fs.readdirSync(__dirname) : [];
       throw new Error(
-        'Unable to locate NestJS serverless handler in dist. Attempted:\n' +
-          errors.join('\n'),
+        `Unable to find serverless.js. cwd: ${process.cwd()} [${cwdList.join(', ')}], __dirname: ${__dirname} [${dirList.join(', ')}]`,
       );
     }
+
+    const mod = require(targetFile);
+    serverlessHandler = mod.default || mod;
   }
   return serverlessHandler;
 }
