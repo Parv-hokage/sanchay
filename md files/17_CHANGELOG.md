@@ -521,6 +521,25 @@ All meaningful product, architecture, security, API, and implementation changes 
   - Single continuous emergency execution log finalized in `emergency phase/EMERGENCY_EXECUTION_LOG.md` (Log Entries 10 and 11).
   - Release Status: **PASS**.
 
+---
+
+## [0.8.10] — 2026-08-17 — Emergency Fix: Vercel Serverless Monorepo Path Elimination
+
+### Fixed & Verified
+
+- **TypeScript Compilation Path Elimination**:
+  - Removed TypeScript `paths` mapping in `apps/api/tsconfig.json` and enforced `rootDir: "./src"`.
+  - Prevented `tsc` from compiling external package sources as local inputs and emitting broken relative `require("../../../../packages/...")` calls.
+- **Self-Contained Serverless Inlining**:
+  - Enhanced `apps/api/scripts/bundle-serverless.js` with comprehensive `onResolve` filters to bundle all `@sanchay/*` modules and intercept relative monorepo paths, inlining them into `dist/serverless.bundle.js` (239 KB).
+  - Verified bundle invariants: 0 unresolved `@sanchay/*` imports, 0 source path requires.
+  - Validated isolated serverless runtime (`apps/api/api/index.js`) for Health (200), Departments (200), JEE Service (200), Auth login (200).
+- **Quality Gates**:
+  - Typecheck: 0 errors across 9 workspaces.
+  - Tests: 95/95 tests passing across 18 test suites.
+  - Build: Monorepo clean build completed successfully.
+
+
 
 
 

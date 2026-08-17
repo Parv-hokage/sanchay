@@ -211,16 +211,14 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 ## Current Task
 
-- Completed: **Emergency Phase E7 — Full Production End-to-End Acceptance (ADR-032)**.
-  - **Objective**: Execute the comprehensive production end-to-end acceptance matrix across all stabilized domains (E1–E6) and establish final release readiness.
-  - **Acceptance & Production Verification**:
-    1. Global Health: Production API returning HTTP 200 on `https://sanchay-three.vercel.app/api/v1/health`.
-    2. Authentication E2E: Passwordless challenge and cryptographic session verification active without token or secret exposure.
-    3. Profile & Citizen Data: Sovereign profile integrity verified as single source of truth; cross-user access rejected (`403 Forbidden`).
-    4. JEE Application Platform: 8-step wizard stepper operational with read-only profile rendering (`✓ From Sanchay Profile`), application-specific examination options, citizen review, and explicit declaration confirmation prior to submission.
-    5. Sanchay AI Orchestrator: Grounded multi-turn conversational assistance, intent classification, JEE syllabus navigation, and strict profile mutation rejection.
-    6. Quality & Security Gates: 0 type errors across 9 workspace projects; 95/95 automated unit and security tests passing.
-    7. All emergency phases (E1–E7) completed and logged in `emergency phase/EMERGENCY_EXECUTION_LOG.md`.
+- Completed: **Emergency Fix — Vercel Serverless Monorepo Path Elimination (ADR-033)**.
+  - **Objective**: Eliminate all TypeScript `paths` mapping regressions that leaked monorepo-relative source paths (`../../../../packages/...`) into compiled NestJS output, ensuring `esbuild` produces a 100% self-contained serverless bundle with zero external path dependencies.
+  - **Packaging Resolution**:
+    1. Removed relative `paths` mappings in `apps/api/tsconfig.json` and set `rootDir: "./src"`.
+    2. Compiled output now directly outputs to `apps/api/dist/serverless.js` using standard workspace package resolution for `@sanchay/*`.
+    3. Updated `apps/api/scripts/bundle-serverless.js` with comprehensive `onResolve` filters to bundle all `@sanchay/*` modules and intercept relative monorepo paths, inlining them into `dist/serverless.bundle.js` (239 KB).
+    4. Verified bundle invariants: 0 unresolved `@sanchay/*` imports, 0 source path requires.
+    5. Verified isolated serverless runtime (`apps/api/api/index.js`): Health (200), Departments (200), JEE Service (200), Login Flow (200).
 
 ---
 
@@ -234,6 +232,6 @@ Sanchay (संचय) is a unified citizen-facing government digital-service pl
 
 - **Typecheck:** Passed (`pnpm typecheck` across all 10 workspaces, 0 errors)
 - **Tests:** Passed (95/95 unit and security tests passing across all packages)
-- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated)
-- **Full Production Acceptance:** Passed (All domains verified live in production; Release Status: PASS)
-- **Validation Date:** 2026-08-17T17:45:00+05:30
+- **Build:** Passed (`apps/api` and `apps/web` production builds completed successfully; self-contained serverless bundle generated: 239 KB)
+- **Isolated Serverless Runtime:** Passed (Health, Departments, JEE, Auth all verified)
+- **Validation Date:** 2026-08-17T18:17:00+05:30

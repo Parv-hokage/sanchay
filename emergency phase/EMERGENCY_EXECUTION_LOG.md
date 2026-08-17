@@ -361,4 +361,44 @@
 - **P1 issues:** NONE
 - **P2 issues:** NONE
 - **Final release decision:** PASS
-- **Next step:** STOP — E7 is final.
+- **Next step:** Vercel Serverless Path Repair.
+
+---
+
+## Log Entry 12: Vercel Serverless Monorepo Path Elimination Repair
+
+- **Phase:** Emergency Fix — Vercel Serverless Monorepo Path Elimination
+- **Step:** Path Mapping Removal & Clean Serverless Bundling
+- **Status:** COMPLETED
+- **What was inspected:**
+  - `apps/api/tsconfig.json` (identified `paths` mappings pointing to `../../packages/*/src/index.ts`).
+  - `apps/api/nest-cli.json`.
+  - `apps/api/scripts/bundle-serverless.js`.
+  - `apps/api/dist/` output structure.
+- **Root cause:**
+  - `apps/api/tsconfig.json` defined TypeScript `paths` mapping `@sanchay/*` to relative source paths (`../../packages/*/src/index.ts`).
+  - When `nest build` executed, `tsc` treated external package sources as inputs to the API compilation, causing it to emit relative source `require("../../../../packages/types/src/index.ts")` calls in the output JS and flattening the directory structure into `dist/apps/api/src/` and `dist/packages/`.
+  - In isolated Vercel serverless Lambda packaging, these relative paths could not resolve.
+- **Files changed:**
+  - `apps/api/tsconfig.json`: Removed all `paths` mappings and set `rootDir: "./src"`, allowing `@sanchay/*` to resolve cleanly as standard workspace package dependencies and emitting `dist/serverless.js` directly at root of `dist/`.
+  - `apps/api/scripts/bundle-serverless.js`: Added comprehensive `onResolve` filters to bundle all `@sanchay/*` modules and intercept any relative `packages/` or `workers/` references, inlining them into `dist/serverless.bundle.js` (239 KB) with post-bundle verification.
+- **Commands executed:**
+  - `apps/api/dist` clean removal.
+  - `pnpm --filter @sanchay/api build`.
+  - Node.js isolated HTTP serverless runtime verification against `apps/api/api/index.js`.
+  - `pnpm typecheck` (0 errors).
+  - `pnpm test` (95/95 tests passing).
+  - `pnpm build` (all 9 workspace projects built cleanly).
+- **Bundle verification results:**
+  - Bundle size: 239 KB self-contained JavaScript.
+  - Unresolved `@sanchay/*` requires: 0.
+  - Monorepo source path requires: 0.
+- **Isolated runtime results:**
+  - `GET /api/v1/health` $\rightarrow$ 200 OK (`{"status":"OK"}`).
+  - `GET /api/v1/departments` $\rightarrow$ 200 OK (Department catalog returned).
+  - `GET /api/v1/services/jee-main` $\rightarrow$ 200 OK (JEE service returned).
+  - `GET /api/v1/auth/session` without auth $\rightarrow$ 401 Unauthorized.
+  - `POST /api/v1/auth/login` $\rightarrow$ 200 OK (`sessionChallengeId` returned).
+- **Quality gates:** Typecheck: PASS | Tests: PASS (95/95) | Build: PASS.
+- **Next step:** Commit and push to main.
+
