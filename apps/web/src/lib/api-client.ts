@@ -20,7 +20,13 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+  const base = (API_BASE || '').replace(/\/+$/, '');
+  let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (base.endsWith('/api/v1') && cleanEndpoint.startsWith('/api/v1')) {
+    cleanEndpoint = cleanEndpoint.substring('/api/v1'.length);
+    if (!cleanEndpoint.startsWith('/')) cleanEndpoint = '/' + cleanEndpoint;
+  }
+  const url = endpoint.startsWith('http') ? endpoint : `${base}${cleanEndpoint}`;
 
   const response = await fetch(url, {
     ...options,
@@ -39,11 +45,9 @@ export async function apiRequest<T>(
   } else {
     // Non-JSON response (e.g. HTML error page or plain text)
     const text = await response.text();
-    if (!response.ok) {
-      throw new Error(
-        `API connection error (${response.status}): Expected JSON response but received ${contentType || 'non-JSON payload'}.`,
-      );
-    }
+    throw new Error(
+      `API connection error (${response.status}): Expected JSON response from ${url} but received ${contentType || 'non-JSON payload'}. Check NEXT_PUBLIC_API_URL and API routing.`,
+    );
   }
 
   if (!response.ok) {
