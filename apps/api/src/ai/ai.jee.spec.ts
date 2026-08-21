@@ -81,10 +81,22 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
       mockDocument as any,
     );
 
+    const mockMe = {
+      getProfile: vi.fn().mockResolvedValue({
+        id: 'prof-jee-1',
+        userId: 'user-jee-id',
+        fullName: 'Parv Garg',
+        gender: 'Female',
+        category: 'OBC_NCL',
+        dateOfBirth: new Date('2006-08-15'),
+      }),
+    };
+
     aiService = new AiService(
       mockPrisma as any,
       mockAudit as any,
       mockKnowledge as any,
+      mockMe as any,
       qwenAdapter,
       intentService,
       contextBuilder,
@@ -145,10 +157,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('does NOT trigger RAG or return citations for casual greetings ("hi")', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'hi',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'hi',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.intent).toBe(IntentType.GENERAL_HELP);
     expect(response.citations).toHaveLength(0);
@@ -157,10 +172,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('does NOT trigger RAG or return citations for capability questions ("what all can you do?")', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'what all can you do?',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'what all can you do?',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.intent).toBe(IntentType.GENERAL_HELP);
     expect(response.citations).toHaveLength(0);
@@ -170,10 +188,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('triggers RAG and returns verified citations for factual syllabus queries', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'What is the syllabus for JEE Main Physics?',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'What is the syllabus for JEE Main Physics?',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.intent).toBe(IntentType.KNOWLEDGE_QUERY);
     expect(mockKnowledge.searchKnowledge).toHaveBeenCalledWith(
@@ -243,6 +264,8 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     expect(detectedDocs.extractedServiceSlug).toBe('jee-main');
   });
 
+  const testUser = { id: 'user-jee-id', sanchayUid: 'uid-jee', status: 'ACTIVE' };
+
   it('detects APPLICATION_ACTION / START_APPLICATION intent and returns action card linking to /services/jee-main/apply', async () => {
     const detected = intentService.detectIntent('I want to apply for JEE Main.', 'jee-main');
     expect(
@@ -250,10 +273,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
         detected.intent === IntentType.START_APPLICATION,
     ).toBe(true);
 
-    const response = await aiService.processChatMessage({
-      message: 'I want to apply for JEE Main.',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'I want to apply for JEE Main.',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(
       response.intent === IntentType.APPLICATION_ACTION ||
@@ -267,10 +293,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     const detected = intentService.detectIntent('My Class 12 year is wrong', 'jee-main');
     expect(detected.intent).toBe(IntentType.NAVIGATE_SERVICE);
 
-    const response = await aiService.processChatMessage({
-      message: 'My Class 12 year is wrong',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'My Class 12 year is wrong',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.actionCard).toBeDefined();
     expect(response.actionCard?.title).toBe('Open My Profile');
@@ -278,38 +307,50 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('answers profile inquiries like "What is my Class 12 passing year?" directly from profile without RAG', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'What is my Class 12 passing year?',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'What is my Class 12 passing year?',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.content).toContain('2025');
   });
 
   it('summarizes available vs missing profile info when user asks "Fill the JEE application for me"', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'Fill the JEE application for me.',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'Fill the JEE application for me.',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.content).toContain('Sanchay Profile');
     expect(response.content).toContain('academic qualifications');
   });
 
   it('answers Category inquiry "What category do I have?" directly from profile without RAG', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'What category do I have?',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'What category do I have?',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.content).toContain('OBC-NCL');
   });
 
   it('directs citizen to My Profile when user reports "My category is wrong"', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'My category is wrong',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'My category is wrong',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.actionCard).toBeDefined();
     expect(response.actionCard?.title).toBe('Open My Profile');
@@ -333,10 +374,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('TEST 3: resolves application action card when user says "apply for me" on JEE route', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'apply for me',
-      context: { serviceId: 'jee-main', route: '/services/jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'apply for me',
+        context: { serviceId: 'jee-main', route: '/services/jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.intent).toBe(IntentType.APPLICATION_ACTION);
     expect(response.actionCard).toBeDefined();
@@ -348,18 +392,24 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
     const detected = intentService.detectIntent('apply for me');
     expect(detected.extractedServiceSlug).toBeUndefined();
 
-    const response = await aiService.processChatMessage({
-      message: 'apply for me',
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'apply for me',
+      },
+      testUser,
+    );
 
     expect(response.content).toContain('specify which service');
   });
 
   it('TEST 5: returns Open My Profile when user reports "My category is wrong"', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'My category is wrong',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'My category is wrong',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.actionCard).toBeDefined();
     expect(response.actionCard?.title).toBe('Open My Profile');
@@ -367,10 +417,13 @@ describe('Phase 7: JEE Service Recreation & AI Integration Tests', () => {
   });
 
   it('TEST 6: directs user to update profile when user says "change my category to General"', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'change my category to General',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'change my category to General',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.content).toContain('Sanchay Profile');
     expect(response.actionCard).toBeDefined();

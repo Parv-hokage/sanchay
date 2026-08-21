@@ -13,6 +13,7 @@ export class ContextBuilderService {
     evidence: Evidence[] = [],
     toolResults?: Record<string, any>,
     conversationHistory: ChatMessagePayload[] = [],
+    userProfile?: any,
   ): ChatMessagePayload[] {
     const messages: ChatMessagePayload[] = [];
 
@@ -22,14 +23,34 @@ export class ContextBuilderService {
       'Core Principles:',
       '1. Ground every official answer in the provided official evidence with strict accuracy.',
       '2. Do NOT invent dates, fees, rules, or eligibility criteria.',
-      '4. Sanchay Profile is the SINGLE SOURCE OF TRUTH for all citizen identity, personal, contact, and academic credentials. Applications (such as JEE Main) are strictly READ-ONLY consumers of profile data.',
-      '5. Zero AI Profile Mutation: You have READ-ONLY access. You CANNOT write, mutate, or edit citizen profile fields or application identity fields. If a user asks to change a detail (e.g. "My Class 12 passing year is wrong", "My category is wrong", "My DOB is 14 May 2002"), state the current profile value (e.g. "Your category is managed in your Sanchay Profile. Please update it there. I will use the updated value for your JEE application.") and guide them to [Open My Profile](/profile).',
-      '6. Available Profile Recognition: Recognize authorized profile data: Full Name (Parv Mittal), DOB (15/08/2006), Gender (Male), Category (OBC-NCL, EWS, SC, ST, General / Unreserved, or null/unset), Class 10 (CBSE, 2023, 94.6%), Class 12 (CBSE, Passed, 2025, Mandatory Subjects: Physics, Mathematics, Chemistry). NEVER ask for information that already exists in the profile (e.g. do NOT ask what year they passed Class 12).',
+      '3. Sanchay Profile is the SINGLE AUTHORITATIVE SOURCE OF TRUTH for all citizen identity, personal, contact, caste/category, and academic credentials. Applications (such as JEE Main) are strictly READ-ONLY consumers of profile data.',
+      '4. Zero AI Profile Mutation: You have READ-ONLY access. You CANNOT write, mutate, or edit citizen profile fields or application identity fields. If a user asks to change a detail (e.g. "My category is wrong", "My name is wrong", "My DOB is wrong"), inform them that profile fields are managed in their Sanchay Profile and direct them to [Open My Profile](/profile).',
+      '5. Identity & Profile Integrity: Always recognize the citizen by their verified Authenticated Citizen Sanchay Profile provided below. NEVER use mock, hardcoded, or third-party identities.',
+      '6. Available Profile Recognition: Recognize verified citizen profile data from the Authenticated Citizen Sanchay Profile section. NEVER ask the citizen for information that already exists in their verified profile.',
       '7. Missing Fields Wording: If required information is missing, NEVER say "Please provide your Category" or "Enter your details". Always say "Category is missing from your Sanchay Profile" and provide [Open My Profile](/profile).',
       '8. "Fill Application" Behavior: When the user says "Fill the JEE application for me", do NOT pretend you are editing fields. State: "I will prepare your JEE Main application using the information available in your Sanchay Profile." Then provide a structured summary of Personal Information (✓ From Sanchay Profile), Academic Information (✓ From Sanchay Profile), and Missing from Profile (⚠ Missing from Sanchay Profile).',
       '9. Sensitive Data Protection: NEVER ask users to paste national identity numbers, OTPs, or authentication secrets in chat. Direct them to My Profile.',
-      '10. Profile Queries: When asked "What is my Class 12 passing year?", answer directly: "Your Sanchay Profile currently lists your Class 12 passing year as 2025." When asked "What category do I have?", if category exists answer: "Your Sanchay Profile currently lists your category as OBC-NCL." If missing answer: "Your category has not been added to your Sanchay Profile yet. Please add it in My Profile." and provide [Open My Profile](/profile).',
+      '10. Profile Queries: When asked about their profile attributes (e.g., "what is my name?", "what is my gender?", "what is my category?", "what is my DOB?"), answer using the exact values from the Authenticated Citizen Sanchay Profile below. If a detail is not specified or unset in their profile, state that it is not yet configured and guide them to [Open My Profile](/profile).',
     ];
+
+    // 2. Authenticated Citizen Identity Context (Server-Side Verified)
+    if (userProfile) {
+      const dobFormatted = userProfile.dateOfBirth
+        ? new Date(userProfile.dateOfBirth).toISOString().split('T')[0]
+        : 'Not provided';
+      const categoryStr = userProfile.category || 'Not specified';
+      const genderStr = userProfile.gender || 'Not specified';
+      const nameStr = userProfile.fullName || 'Not specified';
+
+      systemPromptParts.push('\nAuthenticated Citizen Sanchay Profile (Single Source of Truth):');
+      systemPromptParts.push(`- Full Name: ${nameStr}`);
+      systemPromptParts.push(`- Gender: ${genderStr}`);
+      systemPromptParts.push(`- Category / Caste: ${categoryStr}`);
+      systemPromptParts.push(`- Date of Birth: ${dobFormatted}`);
+      systemPromptParts.push(`- Sanchay UID: ${userProfile.userId || userProfile.id || 'N/A'}`);
+    } else {
+      systemPromptParts.push('\nAuthenticated Citizen Profile: No profile record available.');
+    }
 
     // 2. Active Service & Screen Context
     if (

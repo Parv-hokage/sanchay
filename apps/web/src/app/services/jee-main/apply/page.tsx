@@ -62,9 +62,9 @@ export default function JeeMainApplyPage() {
 
   // Derived citizen values from Sanchay Profile (Single Source of Truth)
   const citizenData = {
-    fullName: profile?.fullName || 'Parv Mittal',
-    dateOfBirth: profile?.dateOfBirth || '2006-08-15',
-    gender: profile?.gender || 'Male',
+    fullName: profile?.fullName || '',
+    dateOfBirth: profile?.dateOfBirth || '',
+    gender: profile?.gender || '',
     category: profile?.category
       ? profile.category === 'GENERAL'
         ? 'General / Unreserved'

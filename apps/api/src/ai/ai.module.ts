@@ -9,9 +9,10 @@ import { ToolRegistryService } from './tools/tool-registry.service';
 import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { ApplicationModule } from '../application/application.module';
 import { DocumentModule } from '../document/document.module';
+import { MeModule } from '../me/me.module';
 
 @Module({
-  imports: [KnowledgeModule, ApplicationModule, DocumentModule],
+  imports: [KnowledgeModule, ApplicationModule, DocumentModule, MeModule],
   controllers: [AiController],
   providers: [
     AiService,

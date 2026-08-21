@@ -78,10 +78,22 @@ describe('AI Orchestrator & Tool Authorization Tests', () => {
       mockDocument as any,
     );
 
+    const mockMe = {
+      getProfile: vi.fn().mockResolvedValue({
+        id: 'prof-test-1',
+        userId: 'user-test-id',
+        fullName: 'Parv Garg',
+        gender: 'Female',
+        category: 'OBC_NCL',
+        dateOfBirth: new Date('2006-08-15'),
+      }),
+    };
+
     aiService = new AiService(
       mockPrisma as any,
       mockAudit as any,
       mockKnowledge as any,
+      mockMe as any,
       qwenAdapter,
       intentService,
       contextBuilder,
@@ -90,11 +102,16 @@ describe('AI Orchestrator & Tool Authorization Tests', () => {
     );
   });
 
+  const testUser = { id: 'user-test-id', sanchayUid: 'uid-test', status: 'ACTIVE' };
+
   it('detects ELIGIBILITY_CHECK intent and returns grounded response with official citations', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'What is the eligibility for JEE Main 2026?',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'What is the eligibility for JEE Main 2026?',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(response.intent).toBe(IntentType.ELIGIBILITY_CHECK);
     expect(response.citations.length).toBeGreaterThan(0);
@@ -104,10 +121,13 @@ describe('AI Orchestrator & Tool Authorization Tests', () => {
   });
 
   it('detects START_APPLICATION intent and resolves application preparation action card', async () => {
-    const response = await aiService.processChatMessage({
-      message: 'I want to start my application for JEE Main',
-      context: { serviceId: 'jee-main' },
-    });
+    const response = await aiService.processChatMessage(
+      {
+        message: 'I want to start my application for JEE Main',
+        context: { serviceId: 'jee-main' },
+      },
+      testUser,
+    );
 
     expect(
       response.intent === IntentType.APPLICATION_ACTION ||

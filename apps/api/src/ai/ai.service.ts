@@ -2,12 +2,14 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  UnauthorizedException,
   Logger,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
+import { MeService } from '../me/me.service';
 import { Qwen3Adapter } from './provider/qwen3.adapter';
 import { IntentDetectionService } from './services/intent-detection.service';
 import { ContextBuilderService } from './services/context-builder.service';
@@ -35,6 +37,7 @@ export class AiService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly knowledgeService: KnowledgeService,
+    private readonly meService: MeService,
     private readonly qwen3Adapter: Qwen3Adapter,
     private readonly intentService: IntentDetectionService,
     private readonly contextBuilder: ContextBuilderService,
@@ -46,18 +49,26 @@ export class AiService {
    * Primary Conversational AI Orchestration Endpoint
    */
   async processChatMessage(dto: AiChatDto, user?: any): Promise<AiChatResponse> {
+    if (!user || !user.id) {
+      throw new UnauthorizedException('Authentication token required to access Sanchay AI.');
+    }
+
     const rawMessage = dto.message.trim();
     const context = dto.context || {};
-    const userId = user?.id || 'anonymous-user';
+    const userId = user.id;
     const conversationId = dto.conversationId || uuidv4();
+
+    // 0. Authoritatively load the user's verified Sanchay profile
+    const userProfile = await this.meService.getProfile(userId);
 
     // 1. Retrieve Conversation History (Last 10 messages) & Enforce User Isolation
     let historyMessages: { role: 'user' | 'assistant'; content: string }[] = [];
 
     if (dto.conversationId) {
+      let existingConv: any = null;
       try {
         if (user?.id) {
-          const existingConv = await this.prisma.aiConversation.findUnique({
+          existingConv = await this.prisma.aiConversation.findUnique({
             where: { id: dto.conversationId },
             include: {
               messages: {
@@ -66,20 +77,20 @@ export class AiService {
               },
             },
           });
-
-          if (existingConv) {
-            if (existingConv.userId !== user.id) {
-              throw new ForbiddenException('Access denied to this conversation.');
-            }
-            historyMessages = existingConv.messages.map((m) => ({
-              role: (m.sender === 'USER' ? 'user' : 'assistant') as 'user' | 'assistant',
-              content: m.content,
-            }));
-          }
         }
       } catch (err: any) {
         if (err instanceof ForbiddenException) throw err;
-        // In-Memory Fallback
+      }
+
+      if (existingConv) {
+        if (existingConv.userId !== user.id) {
+          throw new ForbiddenException('Access denied to this conversation.');
+        }
+        historyMessages = existingConv.messages.map((m: any) => ({
+          role: (m.sender === 'USER' ? 'user' : 'assistant') as 'user' | 'assistant',
+          content: m.content,
+        }));
+      } else {
         const inMemConv = inMemoryConversations.get(dto.conversationId);
         if (inMemConv) {
           if (user?.id && inMemConv.userId !== user.id) {
@@ -163,6 +174,7 @@ export class AiService {
       retrievedEvidence,
       resolvedCap ? { capability: resolvedCap.name, description: resolvedCap.description } : undefined,
       historyMessages as any,
+      userProfile,
     );
 
     // 6. Generate Grounded AI Response via Qwen3 Adapter
@@ -176,6 +188,14 @@ export class AiService {
 
     try {
       if (user?.id) {
+        inMemoryConversations.set(conversationId, {
+          id: conversationId,
+          userId: user.id,
+          serviceId: targetServiceSlug,
+          title: rawMessage.substring(0, 40),
+          updatedAt: new Date(),
+        });
+
         await this.prisma.aiConversation.upsert({
           where: { id: conversationId },
           create: {

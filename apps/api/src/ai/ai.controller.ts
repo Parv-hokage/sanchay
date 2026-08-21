@@ -1,10 +1,12 @@
-import { Controller, Post, Get, Body, Param, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 import { AiChatDto } from '../types';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @ApiTags('AI Orchestrator')
 @Controller('ai')
+@UseGuards(AuthGuard)
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 

@@ -180,20 +180,80 @@ export class Qwen3Adapter implements AIProvider {
       return 'Official JEE (Main) master question papers for 2024 and 2025 across English and Hindi mediums are available in the Question Papers section.';
     }
 
+    // Parse Authenticated Citizen Profile attributes from system prompt if present
+    const profileMatchName = evidenceSystem.match(/Full Name:\s*([^\n]+)/);
+    const profileName = profileMatchName ? profileMatchName[1].trim() : null;
+
+    const profileMatchGender = evidenceSystem.match(/Gender:\s*([^\n]+)/);
+    const profileGender = profileMatchGender ? profileMatchGender[1].trim() : null;
+
+    const profileMatchCategory = evidenceSystem.match(/Category \/ Caste:\s*([^\n]+)/);
+    let profileCategory = profileMatchCategory ? profileMatchCategory[1].trim() : null;
+    if (profileCategory === 'OBC_NCL') {
+      profileCategory = 'OBC-NCL';
+    }
+
+    const profileMatchDob = evidenceSystem.match(/Date of Birth:\s*([^\n]+)/);
+    const profileDob = profileMatchDob ? profileMatchDob[1].trim() : null;
+
+    // Name inquiry ("What is my name?", "What's my name?", "Who am I?")
+    if (
+      userLower.includes('what is my name') ||
+      userLower.includes("what's my name") ||
+      userLower.includes('who am i') ||
+      userLower.includes('my name')
+    ) {
+      if (profileName && profileName !== 'Not specified') {
+        return `Your name is ${profileName} (as per your Sanchay Profile).`;
+      }
+      return 'Your name is not listed in your Sanchay Profile yet. Please update it in [My Profile](/profile).';
+    }
+
+    // Gender inquiry ("What is my gender?", "What's my gender?")
+    if (
+      userLower.includes('what is my gender') ||
+      userLower.includes("what's my gender") ||
+      userLower.includes('my gender')
+    ) {
+      if (profileGender && profileGender !== 'Not specified') {
+        return `Your Sanchay Profile lists your gender as ${profileGender}.`;
+      }
+      return 'Your gender is not specified in your Sanchay Profile yet. Please update it in [My Profile](/profile).';
+    }
+
     // Category correction inquiry
     if (
       userLower.includes('category is wrong') ||
       (userLower.includes('category') && (userLower.includes('wrong') || userLower.includes('change') || userLower.includes('update') || userLower.includes('edit')))
     ) {
-      return 'Your category is managed in your Sanchay Profile. Please update it there. I will use the updated value for your JEE application.';
+      return 'Your category is managed in your Sanchay Profile. Please update it there. I will use the updated value for your JEE application. [Open My Profile](/profile)';
     }
 
-    // Category query
+    // Category inquiry ("What is my category?", "What category do I have?")
     if (
       userLower.includes('what category') ||
-      userLower.includes('what is my category')
+      userLower.includes('what is my category') ||
+      userLower.includes("what's my category") ||
+      userLower.includes('my category') ||
+      userLower.includes('my caste')
     ) {
-      return 'Your Sanchay Profile currently lists your category as OBC-NCL.';
+      if (profileCategory && profileCategory !== 'Not specified') {
+        return `Your Sanchay Profile currently lists your category as ${profileCategory}.`;
+      }
+      return 'Your category has not been added to your Sanchay Profile yet. Please add it in [Open My Profile](/profile).';
+    }
+
+    // DOB inquiry ("What is my DOB?", "What is my date of birth?")
+    if (
+      userLower.includes('what is my dob') ||
+      userLower.includes("what's my dob") ||
+      userLower.includes('date of birth') ||
+      userLower.includes('my birth date')
+    ) {
+      if (profileDob && profileDob !== 'Not provided') {
+        return `Your Sanchay Profile lists your date of birth as ${profileDob}.`;
+      }
+      return 'Your date of birth is not specified in your Sanchay Profile yet. Please update it in [My Profile](/profile).';
     }
 
     // Profile value correction inquiry
@@ -203,7 +263,7 @@ export class Qwen3Adapter implements AIProvider {
       userLower.includes('update my') ||
       userLower.includes('edit my')
     ) {
-      return 'Your Sanchay Profile currently shows Class 12 passing year as 2025. I cannot change Profile information from the application. Please update it in My Profile. Once updated, I will use the new value in the JEE application.';
+      return 'Your Sanchay Profile fields cannot be edited from the application. Please update them in My Profile. Once updated, I will use the new values for your applications. [Open My Profile](/profile)';
     }
 
     // Profile field inquiry

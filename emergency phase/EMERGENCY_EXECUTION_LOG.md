@@ -471,3 +471,31 @@
   - `GET /api/v1/services` $\rightarrow$ **HTTP 200 OK** (Successfully returns active government services without DI failure)
   - `GET /api/v1/services/recommendations` $\rightarrow$ **HTTP 200 OK** (Successfully returns featured service recommendations)
 - **Status:** **VERIFIED IN PRODUCTION — CATALOG DI RESOLUTION FULLY OPERATIONAL**.
+
+### Log Entry 15 — Emergency Fix: AI Identity & Profile Context Binding
+- **Timestamp:** 2026-08-21T16:38:00+05:30
+- **Problem Reported:**
+  - Live production evidence: Authenticated Profile displayed Name: "Parv Garg", Gender: "Female", Category: "OBC-NCL".
+  - Sanchay AI Workspace responded to "what's my name?" with "Your name is Parv Mittal (as per your Sanchay Profile)."
+  - Proved that Sanchay AI was not authoritatively reading the currently authenticated user's real database profile.
+- **Exact Root Cause:**
+  1. `AiController` (`apps/api/src/ai/ai.controller.ts`) lacked `@UseGuards(AuthGuard)`. As a result, NestJS passed the raw unauthenticated request where `req.user` was `undefined`.
+  2. `AiService` (`apps/api/src/ai/ai.service.ts`) defaulted `userId` to `'anonymous-user'` and never queried `MeService` or Prisma for the authenticated user's profile.
+  3. `ContextBuilderService` (`apps/api/src/ai/services/context-builder.service.ts`) hardcoded static mock strings (`Full Name (Parv Mittal)`, `Gender (Male)`, `DOB (15/08/2006)`) inside system prompt guardrail rules.
+  4. `Qwen3Adapter` (`apps/api/src/ai/provider/qwen3.adapter.ts`) local deterministic fallback engine had static hardcoded strings instead of dynamically extracting profile attributes from the prompt.
+  5. `apps/web/src/app/services/jee-main/apply/page.tsx` had fallback `fullName: profile?.fullName || 'Parv Mittal'`.
+- **Files Inspected & Modified:**
+  - `apps/api/src/ai/ai.module.ts`: Imported `MeModule`.
+  - `apps/api/src/ai/ai.controller.ts`: Applied `@UseGuards(AuthGuard)` across all AI endpoints (`chat`, `conversations`, `confirm`).
+  - `apps/api/src/ai/ai.service.ts`: Injected `MeService`, enforced authentication (`user.id`), authoritatively fetched `userProfile` from `meService.getProfile(userId)`, passed `userProfile` to `contextBuilder.buildPromptContext`, and enforced cross-user conversation isolation across both DB and in-memory stores.
+  - `apps/api/src/ai/services/context-builder.service.ts`: Dynamically injected `Authenticated Citizen Sanchay Profile (Single Source of Truth)` with `Full Name`, `Gender`, `Category / Caste`, `Date of Birth`, and `Sanchay UID`. Removed all hardcoded static profile details.
+  - `apps/api/src/ai/provider/qwen3.adapter.ts`: Dynamically extracted citizen profile attributes (`profileName`, `profileGender`, `profileCategory`, `profileDob`) from the prompt to answer citizen inquiries dynamically.
+  - `apps/web/src/app/services/jee-main/apply/page.tsx`: Removed hardcoded `'Parv Mittal'` fallback.
+  - `apps/api/src/ai/ai.identity.spec.ts`: Created 9 comprehensive unit tests verifying identity binding, dynamic user name/gender/category reflection, DB update propagation, cross-user isolation, and rejection of unauthenticated requests.
+  - `apps/api/src/ai/ai.orchestrator.spec.ts` & `apps/api/src/ai/ai.jee.spec.ts`: Updated test harnesses to supply authenticated user context and mock `MeService`.
+- **Commands Executed & Quality Gates:**
+  - `pnpm typecheck`: **PASS** (0 errors across 10 monorepo packages/apps).
+  - `pnpm test`: **PASS** (19 test suites, 104 unit & integration tests passing 100%).
+  - `pnpm build`: **PASS** (All packages, self-contained serverless bundle 320 KB, and Next.js web application built cleanly).
+- **Status:** **IDENTITY ARCHITECTURE SECURED & TESTED**.
+
