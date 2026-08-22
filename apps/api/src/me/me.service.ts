@@ -23,19 +23,6 @@ const inMemoryAddresses = new Map<string, any[]>();
 const inMemoryIdentityLinks = new Map<string, any[]>();
 const inMemoryConsents = new Map<string, any[]>();
 
-const DEFAULT_CITIZEN_PROFILE = {
-  id: 'prof-default-001',
-  userId: 'user-default-001',
-  fullName: 'Parv Mittal',
-  dateOfBirth: new Date('2006-08-15'),
-  gender: 'MALE',
-  category: 'OBC_NCL',
-  preferredLanguage: 'en',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-inMemoryProfiles.set('user-default-001', DEFAULT_CITIZEN_PROFILE);
-
 @Injectable()
 export class MeService {
   constructor(
@@ -109,8 +96,7 @@ export class MeService {
         profile = await this.prisma.profile.create({
           data: {
             userId,
-            fullName: 'Parv Mittal',
-            category: 'OBC_NCL' as any,
+            fullName: '',
             preferredLanguage: 'en',
           },
         });
@@ -123,10 +109,10 @@ export class MeService {
         inMemoryProfiles.set(userId, {
           id: `prof-${userId}`,
           userId,
-          fullName: 'Parv Mittal',
-          dateOfBirth: new Date('2006-08-15'),
-          gender: 'MALE',
-          category: 'OBC_NCL',
+          fullName: '',
+          dateOfBirth: null,
+          gender: null,
+          category: null,
           preferredLanguage: 'en',
           createdAt: new Date(),
           updatedAt: new Date(),

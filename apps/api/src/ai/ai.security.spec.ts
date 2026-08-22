@@ -62,6 +62,10 @@ describe('AI Security, Prompt Injection & Consequential Confirmation Tests', () 
     );
 
     expect(result.referenceCode).toBe('JEE2026-NTA-999');
-    expect(mockApplication.submitApplication).toHaveBeenCalledWith('app-100', user);
+    expect(mockApplication.submitApplication).toHaveBeenCalledWith(
+      'user-100',
+      'app-100',
+      expect.any(String),
+    );
   });
 });

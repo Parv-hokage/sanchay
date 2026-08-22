@@ -360,22 +360,10 @@ export class ApplicationService {
       address = await this.prisma.address.findFirst({ where: { userId, isPrimary: true } });
       contact = await this.prisma.contactMethod.findFirst({ where: { userId, isPrimary: true } });
     } catch {
-      // In-Memory Fallback Profile
-      profile = {
-        fullName: 'Rahul Sharma',
-        gender: 'MALE',
-        dateOfBirth: new Date('2002-05-14'),
-      };
-      address = {
-        line1: 'Flat 402, Shanti Vihar',
-        line2: 'Sector 62',
-        city: 'Noida',
-        state: 'Uttar Pradesh',
-        pincode: '201301',
-      };
-      contact = {
-        valueReference: '+91 98765 43210',
-      };
+      // In-Memory store lookup if DB unreachable - do not invent fake citizen data
+      profile = null;
+      address = null;
+      contact = null;
     }
 
     // Deterministic Mapping Dictionary

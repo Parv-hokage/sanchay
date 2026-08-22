@@ -33,11 +33,12 @@ export function verifyStatelessToken(token: string): any | null {
     token.startsWith('sanchay_mock_') ||
     token === 'citizen_demo_token'
   ) {
+    const customSuffix = token.replace('sanchay_demo_token_', '').replace('sanchay_mock_', '');
+    const resolvedUserId = customSuffix && customSuffix !== 'citizen_demo_token' ? customSuffix : 'citizen_demo';
     return {
-      userId: 'user-default-001',
-      sanchayUid: '00000000-0000-4000-8000-000000000001',
+      userId: resolvedUserId,
+      sanchayUid: `00000000-0000-4000-8000-${resolvedUserId.substring(0, 12).padStart(12, '0')}`,
       status: 'ACTIVE',
-      fullName: 'Parv Mittal',
       exp: Date.now() + 7 * 86400 * 1000,
     };
   }
@@ -71,28 +72,6 @@ interface LoginChallenge {
 // In-memory fallback stores for local resilience
 const inMemoryUsers = new Map<string, any>();
 const inMemorySessions = new Map<string, any>();
-
-// Default demo citizen
-const DEFAULT_CITIZEN_USER = {
-  id: 'user-default-001',
-  sanchayUid: '00000000-0000-4000-8000-000000000001',
-  status: 'ACTIVE' as const,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  lastLoginAt: new Date(),
-  profile: {
-    id: 'prof-default-001',
-    userId: 'user-default-001',
-    fullName: 'Parv Mittal',
-    dateOfBirth: new Date('2006-08-15'),
-    gender: 'MALE',
-    category: 'OBC_NCL',
-    preferredLanguage: 'en',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-};
-inMemoryUsers.set('user-default-001', DEFAULT_CITIZEN_USER);
 
 @Injectable()
 export class AuthService {
@@ -208,7 +187,26 @@ export class AuthService {
       }
     } catch {
       // In-memory fallback
-      user = DEFAULT_CITIZEN_USER;
+      user = {
+        id: `user-${challenge.identifier}`,
+        sanchayUid: `00000000-0000-4000-8000-${challenge.identifier.replace(/[^a-zA-Z0-9]/g, '').padEnd(12, '0').substring(0, 12)}`,
+        status: UserStatus.ACTIVE,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLoginAt: new Date(),
+        profile: {
+          id: `prof-${challenge.identifier}`,
+          userId: `user-${challenge.identifier}`,
+          fullName: '',
+          dateOfBirth: null,
+          gender: null,
+          category: null,
+          preferredLanguage: 'en',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      };
+      inMemoryUsers.set(user.id, user);
     }
 
     if (user.status === UserStatus.SUSPENDED) {
@@ -221,7 +219,7 @@ export class AuthService {
       userId: user.id,
       sanchayUid: user.sanchayUid,
       status: user.status,
-      fullName: user.profile?.fullName || 'Parv Mittal',
+      fullName: user.profile?.fullName || '',
       exp: expiresAt.getTime(),
     });
 
@@ -336,23 +334,22 @@ export class AuthService {
 
     // 3. Stateless cryptographic token verification (survives across serverless lambdas)
     const payload = verifyStatelessToken(cleanToken);
-    if (payload) {
+    if (payload && payload.userId) {
       const user = inMemoryUsers.get(payload.userId) || {
-        id: payload.userId || 'user-default-001',
-        sanchayUid: payload.sanchayUid || '00000000-0000-4000-8000-000000000001',
+        id: payload.userId,
+        sanchayUid: payload.sanchayUid || `00000000-0000-4000-8000-${payload.userId.substring(0, 12).padStart(12, '0')}`,
         status: payload.status || 'ACTIVE',
-        profile: DEFAULT_CITIZEN_USER.profile,
       };
 
       return {
         session: {
-          id: `sess-${payload.userId || 'default'}`,
+          id: `sess-${payload.userId}`,
           userId: user.id,
           sessionToken: cleanToken,
           expiresAt: new Date(payload.exp || Date.now() + 7 * 86400 * 1000),
         },
         user,
-        profile: user.profile,
+        profile: user.profile || null,
       };
     }
 

@@ -1,8 +1,10 @@
-import { Injectable, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, Logger, Optional } from '@nestjs/common';
 import { RiskLevel, ActionCard } from '../../types';
 import { KnowledgeService } from '../../knowledge/knowledge.service';
 import { ApplicationService } from '../../application/application.service';
 import { DocumentService } from '../../document/document.service';
+import { ServiceRegistryService } from '../../catalog/service-registry.service';
+import { ProfileResolverService } from '../../me/profile-resolver.service';
 
 export interface ToolDefinition {
   id: string;
@@ -26,6 +28,39 @@ export class ToolRegistryService {
         description: 'Searches authoritative government bulletins and circulars with verifiable citations.',
         riskLevel: RiskLevel.LOW,
         requiresAuth: false,
+        requiresConfirmation: false,
+      },
+    ],
+    [
+      'service.get_requirements',
+      {
+        id: 'service.get_requirements',
+        name: 'Service Requirements Discovery',
+        description: 'Discovers declared profile and document requirements for any registered government service.',
+        riskLevel: RiskLevel.LOW,
+        requiresAuth: false,
+        requiresConfirmation: false,
+      },
+    ],
+    [
+      'service.get_form_schema',
+      {
+        id: 'service.get_form_schema',
+        name: 'Universal Form Schema Provider',
+        description: 'Retrieves machine-readable universal form schema with field types, sections, and validation.',
+        riskLevel: RiskLevel.LOW,
+        requiresAuth: false,
+        requiresConfirmation: false,
+      },
+    ],
+    [
+      'profile.resolve_requirements',
+      {
+        id: 'profile.resolve_requirements',
+        name: 'Canonical Profile Requirement Resolver',
+        description: 'Deterministically resolves verified citizen profile fields against service requirements.',
+        riskLevel: RiskLevel.LOW,
+        requiresAuth: true,
         requiresConfirmation: false,
       },
     ],
@@ -95,12 +130,25 @@ export class ToolRegistryService {
         requiresConfirmation: false,
       },
     ],
+    [
+      'scholarship.check_eligibility',
+      {
+        id: 'scholarship.check_eligibility',
+        name: 'National Scholarship Eligibility Checker',
+        description: 'Evaluates candidate income threshold (<= 8 Lakh) and merit percentage (>= 60%) deterministically.',
+        riskLevel: RiskLevel.LOW,
+        requiresAuth: false,
+        requiresConfirmation: false,
+      },
+    ],
   ]);
 
   constructor(
     private readonly knowledgeService: KnowledgeService,
     private readonly applicationService: ApplicationService,
     private readonly documentService: DocumentService,
+    @Optional() private readonly serviceRegistry?: ServiceRegistryService,
+    @Optional() private readonly profileResolver?: ProfileResolverService,
   ) {}
 
   getTool(toolId: string): ToolDefinition | undefined {
@@ -157,23 +205,51 @@ export class ToolRegistryService {
         return { result: data };
       }
 
+      case 'service.get_requirements': {
+        const serviceSlug = params.serviceSlug || params.serviceId || 'jee-main';
+        if (this.serviceRegistry) {
+          const reqs = await this.serviceRegistry.getServiceRequirements(serviceSlug);
+          return { result: { serviceSlug, requirements: reqs } };
+        }
+        return { result: { serviceSlug, requirements: [] } };
+      }
+
+      case 'service.get_form_schema': {
+        const serviceSlug = params.serviceSlug || params.serviceId || 'jee-main';
+        if (this.serviceRegistry) {
+          const schema = await this.serviceRegistry.getUniversalFormSchema(serviceSlug);
+          return { result: { serviceSlug, schema } };
+        }
+        return { result: { serviceSlug, schema: null } };
+      }
+
+      case 'profile.resolve_requirements': {
+        const serviceSlug = params.serviceSlug || params.serviceId || 'jee-main';
+        if (this.serviceRegistry && this.profileResolver && user?.id) {
+          const reqs = await this.serviceRegistry.getServiceRequirements(serviceSlug);
+          const report = await this.profileResolver.resolveRequirements(user.id, reqs, params.fields || {});
+          return { result: report };
+        }
+        return { result: { isComplete: false, message: 'Profile resolver unavailable' } };
+      }
+
       case 'application.autofill': {
-        const data = await this.applicationService.autofillApplication(params.applicationId, user);
+        const data = await this.applicationService.autofillApplication(user?.id || user, params.applicationId, params.dto || {});
         return { result: data };
       }
 
       case 'application.review': {
-        const data = await this.applicationService.getApplicationReview(params.applicationId, user);
+        const data = await this.applicationService.getApplicationReview(user?.id || user, params.applicationId);
         return { result: data };
       }
 
       case 'application.submit_mock': {
-        const data = await this.applicationService.submitApplication(params.applicationId, user);
+        const data = await this.applicationService.submitApplication(user?.id || user, params.applicationId);
         return { result: data };
       }
 
       case 'document.list': {
-        const data = await this.documentService.listDocuments(user);
+        const data = await this.documentService.listDocuments(user?.id || user);
         return { result: data };
       }
 
@@ -193,6 +269,7 @@ export class ToolRegistryService {
         const eligible = passingYear >= 2024 && passingYear <= 2026;
         return {
           result: {
+            service: 'jee-main',
             eligible,
             criteria: {
               qualifyingYears: [2024, 2025, 2026],
@@ -203,6 +280,26 @@ export class ToolRegistryService {
             message: eligible
               ? 'Candidate is eligible for JEE (Main) 2026 based on qualifying examination year and subjects.'
               : 'Candidate does not meet qualifying year requirements for JEE (Main) 2026.',
+          },
+        };
+      }
+
+      case 'scholarship.check_eligibility': {
+        if (this.serviceRegistry) {
+          const res = await this.serviceRegistry.executeServiceAction('national-scholarship', 'check_eligibility', params, user);
+          return { result: res };
+        }
+        const income = parseFloat(params.income || params.annualFamilyIncome);
+        const marks = parseFloat(params.marks || params.class12Percentage);
+        const eligible = !isNaN(income) && income <= 800000 && !isNaN(marks) && marks >= 60;
+        return {
+          result: {
+            service: 'national-scholarship',
+            eligible,
+            criteria: { maxIncome: 800000, minMarks: 60 },
+            message: eligible
+              ? 'Candidate meets both income (<= 8 Lakh) and academic (>= 60%) merit criteria.'
+              : 'Candidate does not meet scholarship eligibility thresholds.',
           },
         };
       }

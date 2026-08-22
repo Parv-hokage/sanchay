@@ -539,6 +539,33 @@ All meaningful product, architecture, security, API, and implementation changes 
   - Tests: 95/95 tests passing across 18 test suites.
   - Build: Monorepo clean build completed successfully.
 
+---
+
+## [0.9.0] — 2026-08-22 — Phase 8: Universal Service Ecosystem & Multi-Service Integration
+
+### Added & Implemented
+
+- **Universal Service Adapter Architecture**:
+  - Created `ServiceAdapter` contract interface in `apps/api/src/catalog/adapters/service-adapter.interface.ts`.
+  - Implemented `JeeMainAdapter` (`apps/api/src/catalog/adapters/jee-main.adapter.ts`) encapsulating JEE Main requirements, form schemas, and action handlers.
+  - Implemented `NationalScholarshipAdapter` (`apps/api/src/catalog/adapters/national-scholarship.adapter.ts`) as a mock second service proof, validating zero duplication across authentication, profile resolution, vault access, form validation, and audit logging.
+- **Centralized Service Registry**:
+  - Implemented `ServiceRegistryService` (`apps/api/src/catalog/service-registry.service.ts`) for dynamic adapter lookup, requirement discovery, universal form schema provision, and action execution.
+- **Canonical Profile Resolver & Field State Machine**:
+  - Implemented `ProfileResolverService` (`apps/api/src/me/profile-resolver.service.ts`) with deterministic field states (`PROFILE_VERIFIED`, `USER_PROVIDED`, `AI_EXTRACTED`, `MISSING`, `INVALID`, `VALID`, `REQUIRES_CONFIRMATION`, `LOCKED`).
+- **Universal AI Action Engine Expansion**:
+  - Expanded `ToolRegistryService` (`apps/api/src/ai/tools/tool-registry.service.ts`) with universal tools: `service.get_requirements`, `service.get_form_schema`, `profile.resolve_requirements`, `scholarship.check_eligibility`.
+- **Identity Chain Integrity & Fallback Eradication**:
+  - Eradicated `DEFAULT_CITIZEN_PROFILE`, `DEFAULT_CITIZEN_USER`, and all fallback default personas (`user-default-001`, `Parv Mittal`, `Rahul Sharma`).
+  - Added automated regression test `apps/api/src/me/me.identity-chain.spec.ts` proving unbroken identity flow from `AUTH SESSION → USER ID → PROFILE RESOLVER → AI CONTEXT → FORM STATE → SERVICE ADAPTER`.
+- **Universal Ecosystem Test Suite**:
+  - Added `apps/api/src/catalog/universal-ecosystem.spec.ts` (13 tests) verifying adapter contracts, schema validation, profile resolution, and multi-service isolation.
+- **Quality Gates**:
+  - `pnpm typecheck`: 0 errors across 10 workspaces.
+  - `pnpm test`: 123/123 tests passing across 21 test suites.
+  - `pnpm build`: Clean build of all packages, API serverless bundle (355 KB), and Next.js web application.
+
+
 
 
 

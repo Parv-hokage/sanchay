@@ -10,9 +10,10 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { ApplicationModule } from '../application/application.module';
 import { DocumentModule } from '../document/document.module';
 import { MeModule } from '../me/me.module';
+import { CatalogModule } from '../catalog/catalog.module';
 
 @Module({
-  imports: [KnowledgeModule, ApplicationModule, DocumentModule, MeModule],
+  imports: [KnowledgeModule, ApplicationModule, DocumentModule, MeModule, CatalogModule],
   controllers: [AiController],
   providers: [
     AiService,
