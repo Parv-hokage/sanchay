@@ -116,6 +116,11 @@ export class ProfileResolverService {
         state = FieldState.PROFILE_VERIFIED;
         verified = true;
         editable = false;
+      } else if (profile && (profile as any)[req.fieldKey] !== undefined && (profile as any)[req.fieldKey] !== null && String((profile as any)[req.fieldKey]).trim().length > 0) {
+        val = String((profile as any)[req.fieldKey]);
+        state = FieldState.PROFILE_VERIFIED;
+        verified = true;
+        editable = false;
       }
 
       // 2. Check User-Supplied Inputs if not resolved from verified profile

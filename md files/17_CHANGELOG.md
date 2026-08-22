@@ -565,6 +565,29 @@ All meaningful product, architecture, security, API, and implementation changes 
   - `pnpm test`: 123/123 tests passing across 21 test suites.
   - `pnpm build`: Clean build of all packages, API serverless bundle (355 KB), and Next.js web application.
 
+---
+
+## [0.9.1] — 2026-08-22 — Phase 8.1: Universal Form Playground & Bidirectional AI Sync
+
+### Added & Implemented
+
+- **Playground Service Adapter**:
+  - Created `PlaygroundAdapter` (`apps/api/src/catalog/adapters/playground.adapter.ts`) implementing the `ServiceAdapter` contract with 11 profile-backed fields, 5 application-owned fields, 2 document requirements, and synthetic mock submission actions.
+  - Registered `PlaygroundAdapter` into `ServiceRegistryService` and `CatalogModule`.
+- **Standalone Form Engine UI (`/playground/universal-form`)**:
+  - Implemented interactive proving ground at `apps/web/src/app/playground/universal-form/page.tsx` with top isolation banner, profile-locked fields (`PROFILE_VERIFIED`), editable preferences (`USER_PROVIDED`), Document Vault linking, upload simulator, transparent review sheet, and 2-step confirmation modal.
+- **Bidirectional AI $\leftrightarrow$ Form State Synchronization**:
+  - Synchronized conversational commands in `Qwen3Adapter` and `ToolRegistryService` ("Fill everything you already know", "Set preferred city to Noida", "Find my 12th marksheet", "Review my application") with live form state.
+- **Extended Profile Resolver**:
+  - Extended `ProfileResolverService` to automatically resolve 10th/12th academic qualifications directly from verified profile attributes.
+- **Automated Regression Suite (`apps/api/src/catalog/playground-form.spec.ts`)**:
+  - Added 9 unit & integration tests covering schema generation, profile auto-fill, missing-field detection, validation enforcement, confirmation safety, and cross-user isolation.
+- **Quality Gates**:
+  - `pnpm typecheck`: 0 errors across 10 workspaces.
+  - `pnpm test`: 132/132 tests passing across 22 test suites.
+  - `pnpm build`: Monorepo clean build (serverless bundle 375 KB, Next.js 30 static/dynamic routes).
+
+
 
 
 

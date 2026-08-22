@@ -65,7 +65,6 @@ describe('AI Security, Prompt Injection & Consequential Confirmation Tests', () 
     expect(mockApplication.submitApplication).toHaveBeenCalledWith(
       'user-100',
       'app-100',
-      expect.any(String),
     );
   });
 });

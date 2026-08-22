@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Optional } from '@nestjs/common';
 import {
   ServiceAdapter,
   UniversalFormSchema,
@@ -6,6 +6,7 @@ import {
 } from './adapters/service-adapter.interface';
 import { JeeMainAdapter } from './adapters/jee-main.adapter';
 import { NationalScholarshipAdapter } from './adapters/national-scholarship.adapter';
+import { PlaygroundAdapter } from './adapters/playground.adapter';
 import { ServiceRequirementField } from '../me/profile-resolver.service';
 
 @Injectable()
@@ -16,15 +17,20 @@ export class ServiceRegistryService {
   constructor(
     private readonly jeeMainAdapter: JeeMainAdapter,
     private readonly nationalScholarshipAdapter: NationalScholarshipAdapter,
+    @Optional() private readonly playgroundAdapter?: PlaygroundAdapter,
   ) {
     this.registerAdapter(this.jeeMainAdapter);
     this.registerAdapter(this.nationalScholarshipAdapter);
+    if (this.playgroundAdapter) {
+      this.registerAdapter(this.playgroundAdapter);
+    }
   }
 
   /**
    * Registers a service adapter
    */
-  registerAdapter(adapter: ServiceAdapter): void {
+  registerAdapter(adapter?: ServiceAdapter): void {
+    if (!adapter) return;
     this.adapters.set(adapter.serviceId.toLowerCase(), adapter);
     this.adapters.set(adapter.slug.toLowerCase(), adapter);
     this.logger.log(`[ServiceRegistry] Registered Universal Adapter: ${adapter.name} (${adapter.slug})`);

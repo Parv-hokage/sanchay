@@ -244,6 +244,21 @@ export class ToolRegistryService {
       }
 
       case 'application.submit_mock': {
+        if (params.serviceSlug === 'universal-form' || params.isPlayground) {
+          if (this.serviceRegistry) {
+            const playRes = await this.serviceRegistry.executeServiceAction('universal-form', 'submit_mock', params, user);
+            return { result: playRes };
+          }
+          const testCode = `TEST-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+          return {
+            result: {
+              status: 'SUCCESS',
+              referenceCode: testCode,
+              message: `TEST APPLICATION SUBMITTED — ${testCode}`,
+              isPlayground: true,
+            },
+          };
+        }
         const data = await this.applicationService.submitApplication(user?.id || user, params.applicationId);
         return { result: data };
       }

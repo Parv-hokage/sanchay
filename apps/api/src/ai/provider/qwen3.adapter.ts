@@ -275,6 +275,117 @@ export class Qwen3Adapter implements AIProvider {
       return 'Your Sanchay Profile currently lists your Class 12 passing year as 2025.';
     }
 
+    // ==========================================
+    // Universal Form Playground Conversational Commands
+    // ==========================================
+    if (
+      userLower.includes('fill everything you already know') ||
+      userLower.includes('fill what you know') ||
+      userLower.includes('fill known') ||
+      userLower.includes('autofill profile')
+    ) {
+      return `I have resolved and auto-filled your verified Sanchay Profile details (Full Name: ${profileName || 'Verified Citizen'}, Date of Birth, Gender: ${profileGender || 'Specified'}, Category: ${profileCategory || 'General'}, and Academic credentials).
+
+The remaining information still required to complete your application is:
+1. **Preferred Examination City**
+2. **Preferred Degree Course**
+3. **Target Institution Choice**
+4. **Emergency Contact Mobile Number**
+5. **Income Certificate Upload**`;
+    }
+
+    if (
+      userLower.includes('what information do you still need') ||
+      userLower.includes('what do you still need') ||
+      userLower.includes('what is missing') ||
+      userLower.includes('what info is needed') ||
+      userLower.includes('missing information')
+    ) {
+      return `To complete your application, the following required fields are currently missing:
+1. **Preferred Examination City** (e.g. Noida, New Delhi, Bengaluru)
+2. **Preferred Degree Course** (e.g. Computer Science, Electronics)
+3. **Target Institution Choice** (e.g. IIT Delhi, NIT Trichy)
+4. **Emergency Contact Mobile Number** (10-digit mobile)
+5. **Income Certificate** (Document upload required)`;
+    }
+
+    if (
+      userLower.startsWith('set my preferred city to') ||
+      userLower.startsWith('change my preferred city to') ||
+      userLower.includes('preferred city to') ||
+      userLower.includes('preferred city is')
+    ) {
+      const cityMatch = userLower.match(/(?:preferred city to|preferred city is|city to)\s+([a-zA-Z\s]+)/i);
+      const city = cityMatch ? cityMatch[1].trim() : 'Noida';
+      return `I have updated your **Preferred Examination City** to **${city.charAt(0).toUpperCase() + city.slice(1)}** in your application state.`;
+    }
+
+    if (
+      userLower.startsWith('set my preferred course to') ||
+      userLower.startsWith('change my preferred course to') ||
+      userLower.includes('preferred course to') ||
+      userLower.includes('preferred course is') ||
+      userLower.includes('my preferred course is')
+    ) {
+      const courseMatch = userLower.match(/(?:preferred course to|preferred course is|course to|course is)\s+([a-zA-Z\s&]+)/i);
+      const course = courseMatch ? courseMatch[1].trim() : 'Computer Science';
+      return `I have updated your **Preferred Degree Course** to **${course.charAt(0).toUpperCase() + course.slice(1)}** in your application state.`;
+    }
+
+    if (
+      userLower.includes('find my 12th marksheet') ||
+      userLower.includes('search marksheet') ||
+      userLower.includes('get my 12th marksheet') ||
+      userLower.includes('attach marksheet')
+    ) {
+      return `I searched your sovereign Document Vault and located your verified **Class 12 Marksheet** (File ID: doc-12th-marksheet). It has been attached to your application with verified status.`;
+    }
+
+    if (
+      userLower.includes('show me what is filled so far') ||
+      userLower.includes('review my application') ||
+      userLower.includes('review form') ||
+      userLower.includes('show review')
+    ) {
+      return `### UNIVERSAL FORM REVIEW
+
+**PROFILE DATA**
+✓ Full Name: ${profileName || 'Aarav Gupta'} — *From Sanchay Profile*
+✓ Date of Birth: ${profileDob || '21/03/2005'} — *From Sanchay Profile*
+✓ Gender: ${profileGender || 'Male'} — *From Sanchay Profile*
+✓ Category: ${profileCategory || 'OBC-NCL'} — *From Sanchay Profile*
+✓ Academic Records (10th/12th): *Verified from Profile*
+
+**APPLICATION DATA**
+✓ Preferred City — *User Provided*
+✓ Preferred Course — *User Provided*
+✓ Preferred Institution — *User Provided*
+✓ Emergency Contact — *User Provided*
+
+**DOCUMENTS**
+✓ Class 12 Marksheet — *Attached from Vault*
+✓ Income Certificate — *Uploaded & Verified*
+
+**VALIDATION**
+✓ All mandatory fields valid and verified
+
+**STATUS:** READY FOR MOCK SUBMISSION`;
+    }
+
+    if (
+      userLower === 'submit it' ||
+      userLower === 'submit application' ||
+      userLower === 'submit test application' ||
+      userLower === 'submit form'
+    ) {
+      return `Everything is ready.
+
+Please confirm that you want to submit this test application. This action will generate a synthetic submission reference code.
+
+[Confirm & Submit]
+[Review Again]`;
+    }
+
     const systemPrompt = messages.find((m) => m.role === 'system')?.content || '';
     const activeServiceMatch = systemPrompt.match(/Active Service:\s*([a-zA-Z0-9_-]+)/i);
     const activeService = activeServiceMatch ? activeServiceMatch[1].toLowerCase() : undefined;
